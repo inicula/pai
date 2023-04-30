@@ -77,6 +77,7 @@ struct Expression {
 
 using SharedExpr = std::shared_ptr<Expression>;
 
+void pexit(bool, const char*, auto&&...);
 SharedExpr add(const SharedExpr&, const SharedExpr&);
 SharedExpr subtract(const SharedExpr&, const SharedExpr&);
 SharedExpr multiply(const SharedExpr&, const SharedExpr&);

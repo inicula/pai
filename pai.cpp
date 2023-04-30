@@ -13,6 +13,15 @@
 
 static std::unordered_map<std::string, SharedExpr> vars;
 
+void
+pexit(bool cond, const char* fmt, auto&&... args)
+{
+    if (!cond) {
+        fmt::print(stderr, fmt::runtime(fmt), std::forward<decltype(args)>(args)...);
+        exit(EXIT_FAILURE);
+    }
+}
+
 SharedExpr
 add(const SharedExpr& left, const SharedExpr& right)
 {
@@ -79,11 +88,11 @@ divide(const SharedExpr& left, const SharedExpr& right)
 
     if (right->type == ET_integer) {
         i64 d = right->members.value;
-        assert(d);
+        pexit(d, "Division by 0\n");
         res->members.value /= d;
     } else {
         i64 d = right->members.bvalue;
-        assert(d);
+        pexit(d, "Division by 0\n");
         res->members.value /= d;
     }
 
@@ -103,7 +112,7 @@ concat(const SharedExpr& left, const SharedExpr& right)
 bool
 to_bool(const SharedExpr& e)
 {
-    assert(IS_IRREDUCIBLE(e->type));
+    pexit(IS_IRREDUCIBLE(e->type), "Expected irreducible type\n");
 
     switch (e->type) {
     case ET_var:
@@ -190,7 +199,7 @@ cmp(const SharedExpr& left, const SharedExpr& right, OperatorType op)
 
         return boolean(b);
     } else {
-        assert(false);
+        pexit(false, "Bug\n");
     }
 
     return {res, Expression::Deleter{}};
@@ -247,9 +256,9 @@ evaluate(const std::shared_ptr<Expression>& e)
         if (IS_ARITH_OP(operation.op)) {
             auto left_eval = evaluate(operation.left);
             auto right_eval = evaluate(operation.right);
-            assert(left_eval && right_eval);
-            assert(left_eval->type == right_eval->type);
-            assert(IS_IRREDUCIBLE(left_eval->type));
+            pexit(left_eval && right_eval, "Found nullptr\n");
+            pexit(left_eval->type == right_eval->type, "Mismatching types\n");
+            pexit(IS_IRREDUCIBLE(left_eval->type), "Expected irreducible type\n");
 
             if (left_eval->type == ET_integer || left_eval->type == ET_bool) {
                 switch (operation.op) {
@@ -271,7 +280,7 @@ evaluate(const std::shared_ptr<Expression>& e)
                 case OT_minus: /* Fallthrough */
                 case OT_mul:   /* Fallthrough */
                 case OT_div:
-                    assert(false); /* Syntax error */
+                    pexit(false, "Syntax error\n");
                 default:
                     __builtin_unreachable();
                 }
@@ -289,11 +298,12 @@ evaluate(const std::shared_ptr<Expression>& e)
         } else if (IS_COMP(operation.op)) {
             auto left_eval = evaluate(operation.left);
             auto right_eval = evaluate(operation.right);
-            assert(IS_IRREDUCIBLE(left_eval->type) && IS_IRREDUCIBLE(right_eval->type));
+            pexit(IS_IRREDUCIBLE(left_eval->type) && IS_IRREDUCIBLE(right_eval->type),
+                  "Expected irreducible types\n");
 
             return cmp(left_eval, right_eval, operation.op);
         } else {
-            assert(false);
+            pexit(false, "Bug\n");
         }
     }
     default:
@@ -305,7 +315,7 @@ void
 print(const SharedExpr& e_)
 {
     auto reduced = evaluate(e_);
-    assert(IS_IRREDUCIBLE(reduced->type));
+    pexit(IS_IRREDUCIBLE(reduced->type), "Expected irreducible type\n");
 
     switch (reduced->type) {
     case ET_var:
@@ -347,8 +357,9 @@ yy::parser::error(const location_type& loc, const std::string& msg)
 int
 main(int argc, char** argv)
 {
-    std::ifstream in(argv[1]);
+    pexit(argc == 2, "Usage: pai <input-file>");
 
+    std::ifstream in(argv[1]);
     lexer = new yyFlexLexer(&in);
     yy::parser parser;
     parser.parse();

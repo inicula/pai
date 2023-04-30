@@ -70,7 +70,8 @@ expr:
 |
     NUMBER {
         i64 value;
-        assert(std::from_chars($1.data(), $1.data() + $1.size(), value).ec == std::errc{});
+        pexit(std::from_chars($1.data(), $1.data() + $1.size(), value).ec == std::errc{},
+              "std::from_chars failed\n");
         $$ = number(value);
     }
 |
@@ -83,7 +84,7 @@ expr:
     }
 |
     OBRAK numbers CBRAK {
-        assert($2);
+        pexit($2, "Found nullptr\n");
         $$ = integers(*$2);
         delete $2;
     }
@@ -103,7 +104,8 @@ expr:
 numbers:
     NUMBER {
         i64 value;
-        assert(std::from_chars($1.data(), $1.data() + $1.size(), value).ec == std::errc{});
+        pexit(std::from_chars($1.data(), $1.data() + $1.size(), value).ec == std::errc{},
+              "std::from_chars failed\n");
 
         $$ = new std::vector<i64>();
         $$->push_back(value);
@@ -111,7 +113,8 @@ numbers:
 |
     numbers COMMA NUMBER {
         i64 value;
-        assert(std::from_chars($3.data(), $3.data() + $3.size(), value).ec == std::errc{});
+        pexit(std::from_chars($3.data(), $3.data() + $3.size(), value).ec == std::errc{},
+              "std::from_chars failed\n");
 
         $1->push_back(value);
         $$ = $1;
