@@ -37,12 +37,14 @@ struct Expression {
             switch (e->type) {
             case ET_var:
                 std::destroy_at(&e->members.name);
+                break;
             case ET_integer:
                 break;
             case ET_bool:
                 break;
             case ET_list:
                 std::destroy_at(&e->members.integers);
+                break;
             case ET_operator:
                 std::destroy_at(&e->members.left);
                 std::destroy_at(&e->members.right);
