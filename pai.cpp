@@ -14,9 +14,10 @@
 static std::unordered_map<std::string, SharedExpr> vars;
 
 void
-pexit(bool cond, const char* fmt, auto&&... args)
+pexit(bool cond, const char* fmt_, auto&&... args)
 {
     if (!cond) {
+        auto fmt = "Error: " + std::string(fmt_);
         fmt::print(stderr, fmt::runtime(fmt), std::forward<decltype(args)>(args)...);
         exit(EXIT_FAILURE);
     }
