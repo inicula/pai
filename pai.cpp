@@ -1,32 +1,4 @@
-#include <vector>
-#include <memory>
-#include <cstdint>
-#include <unordered_map>
-#include <cassert>
-
-using u8 = uint8_t;
-using i64 = int64_t;
-
-enum OperatorType : u8 {
-    OT_plus,
-    OT_minus,
-    OT_mul,
-    OT_div,
-    OT_and,
-    OT_or,
-    OT_neg,
-    OT_less,
-    OT_greater,
-    OT_equal,
-};
-
-enum ExpressionType : u8 {
-    ET_var = 0,
-    ET_integer,
-    ET_bool,
-    ET_list,
-    ET_operator,
-};
+#include "pai.h"
 
 #define IS_ARITH_OP(x) (x == OT_plus || x == OT_minus || x == OT_div || x == OT_mul)
 #define IS_LOGICAL(x) (x == OT_and || x == OT_or || x == OT_neg)
@@ -34,57 +6,9 @@ enum ExpressionType : u8 {
 #define IS_IRREDUCIBLE(expr_type)                                                             \
     (expr_type == ET_integer || expr_type == ET_bool || expr_type == ET_list)
 
-struct Expression {
-    struct Deleter {
-        void
-        operator()(Expression* e) const
-        {
-            switch (e->type) {
-            case ET_var:
-                std::destroy_at(&e->members.name);
-            case ET_integer:
-                break;
-            case ET_bool:
-                break;
-            case ET_list:
-                std::destroy_at(&e->members.integers);
-            case ET_operator:
-                std::destroy_at(&e->members.left);
-                std::destroy_at(&e->members.right);
-                break;
-            }
-        }
-    };
-
-    ExpressionType type;
-    union U {
-        struct {
-            std::string name;
-        };
-        struct {
-            i64 value;
-        };
-        struct {
-            bool bvalue;
-        };
-        struct {
-            std::vector<i64> integers;
-        };
-        struct {
-            OperatorType op;
-            std::shared_ptr<Expression> left;
-            std::shared_ptr<Expression> right;
-        };
-
-        ~U() {}
-    } members;
-};
-
-using SharedExpr = std::shared_ptr<Expression>;
-
 static std::unordered_map<std::string, SharedExpr> vars;
 
-static SharedExpr
+SharedExpr
 add(const SharedExpr& left, const SharedExpr& right)
 {
     auto res = new Expression{ET_integer, {}};
@@ -102,7 +26,7 @@ add(const SharedExpr& left, const SharedExpr& right)
     return {res, Expression::Deleter{}};
 }
 
-static SharedExpr
+SharedExpr
 subtract(const SharedExpr& left, const SharedExpr& right)
 {
     auto res = new Expression{ET_integer, {}};
@@ -120,7 +44,7 @@ subtract(const SharedExpr& left, const SharedExpr& right)
     return {res, Expression::Deleter{}};
 }
 
-static SharedExpr
+SharedExpr
 multiply(const SharedExpr& left, const SharedExpr& right)
 {
     auto res = new Expression{ET_integer, {}};
@@ -138,7 +62,7 @@ multiply(const SharedExpr& left, const SharedExpr& right)
     return {res, Expression::Deleter{}};
 }
 
-static SharedExpr
+SharedExpr
 divide(const SharedExpr& left, const SharedExpr& right)
 {
     auto res = new Expression{ET_integer, {}};
@@ -161,7 +85,7 @@ divide(const SharedExpr& left, const SharedExpr& right)
     return {res, Expression::Deleter{}};
 }
 
-static SharedExpr
+SharedExpr
 concat(const SharedExpr& left, const SharedExpr& right)
 {
     auto res = new Expression{ET_list, {.integers = left->members.integers}};
@@ -171,7 +95,7 @@ concat(const SharedExpr& left, const SharedExpr& right)
     return {res, Expression::Deleter{}};
 }
 
-static bool
+bool
 to_bool(const SharedExpr& e)
 {
     assert(IS_IRREDUCIBLE(e->type));
@@ -190,14 +114,14 @@ to_bool(const SharedExpr& e)
     }
 }
 
-static SharedExpr
+SharedExpr
 boolean(bool b)
 {
     auto res = new Expression{ET_bool, {.bvalue = b}};
     return {res, Expression::Deleter{}};
 }
 
-static SharedExpr
+SharedExpr
 cmp(const SharedExpr& left, const SharedExpr& right, OperatorType op)
 {
     auto res = new Expression{ET_bool, {}};
@@ -258,7 +182,7 @@ cmp(const SharedExpr& left, const SharedExpr& right, OperatorType op)
     return {res, Expression::Deleter{}};
 }
 
-static std::shared_ptr<Expression>
+std::shared_ptr<Expression>
 evaluate(const std::shared_ptr<Expression>& e)
 {
     if (!e)
@@ -334,5 +258,4 @@ evaluate(const std::shared_ptr<Expression>& e)
 int
 main()
 {
-    Expression e{ET_var, {.name = "afjskdjfsldjfklsjldjflsjdfjsljdfkjskdljfklsjdfbc"}};
 }
