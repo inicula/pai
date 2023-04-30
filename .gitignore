@@ -1,2 +1,9 @@
 a.out
 pai
+location.hh
+pai_lexer.cc
+pai_lexer.h
+pai_parser.cc
+pai_parser.h
+position.hh
+stack.hh

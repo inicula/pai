@@ -4,15 +4,16 @@
 
 %code top {
 #include <variant>
-#include "mypy.h"
+#include <charconv>
+#include "pai.h"
 }
 
 %code provides {
 int yylex(yy::parser::semantic_type* yylval, yy::parser::location_type* yylloc);
 }
 
-%output  "mypy_parser.cc"
-%defines "mypy_parser.h"
+%output  "pai_parser.cc"
+%defines "pai_parser.h"
 
 %token IF
 %token TRUE
@@ -47,8 +48,8 @@ int yylex(yy::parser::semantic_type* yylval, yy::parser::location_type* yylloc);
 
 program:
     exprs {
-        for(auto* e : *$1)
-            evaluate(e);
+        for(auto e : *$1)
+            print(e);
         delete $1;
     }
 
@@ -92,7 +93,7 @@ expr:
     }
 |
     EXCL expr {
-        $$ = operation(s1, OT_NEG, nullptr);
+        $$ = operation($2, OT_neg, nullptr);
     }
 |
     OPAREN expr CPAREN {
@@ -125,6 +126,6 @@ bin_op:
     DOUBLE_PIPE  { $$ = OT_or;      } |
     LESS         { $$ = OT_less;    } |
     GREATER      { $$ = OT_greater; } |
-    DOUBLE_EQUAL { $$ = OT_eq;      }
+    DOUBLE_EQUAL { $$ = OT_equal;      }
 
 %%

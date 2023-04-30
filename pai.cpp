@@ -1,4 +1,9 @@
 #include "pai.h"
+#include "pai_parser.h"
+#include "pai_lexer.h"
+#include <fstream>
+#include <fmt/core.h>
+#include <fmt/ranges.h>
 
 #define IS_ARITH_OP(x) (x == OT_plus || x == OT_minus || x == OT_div || x == OT_mul)
 #define IS_LOGICAL(x) (x == OT_and || x == OT_or || x == OT_neg)
@@ -134,10 +139,13 @@ cmp(const SharedExpr& left, const SharedExpr& right, OperatorType op)
             __builtin_unreachable();
         case ET_integer:
             b = left->members.value < right->members.value;
+            break;
         case ET_bool:
             b = left->members.bvalue < right->members.bvalue;
+            break;
         case ET_list:
             b = left->members.integers < right->members.integers;
+            break;
         case ET_operator:
             __builtin_unreachable();
         }
@@ -150,10 +158,13 @@ cmp(const SharedExpr& left, const SharedExpr& right, OperatorType op)
             __builtin_unreachable();
         case ET_integer:
             b = left->members.value > right->members.value;
+            break;
         case ET_bool:
             b = left->members.bvalue > right->members.bvalue;
+            break;
         case ET_list:
             b = left->members.integers > right->members.integers;
+            break;
         case ET_operator:
             __builtin_unreachable();
         }
@@ -166,10 +177,13 @@ cmp(const SharedExpr& left, const SharedExpr& right, OperatorType op)
             __builtin_unreachable();
         case ET_integer:
             b = left->members.value == right->members.value;
+            break;
         case ET_bool:
             b = left->members.bvalue == right->members.bvalue;
+            break;
         case ET_list:
             b = left->members.integers == right->members.integers;
+            break;
         case ET_operator:
             __builtin_unreachable();
         }
@@ -178,6 +192,38 @@ cmp(const SharedExpr& left, const SharedExpr& right, OperatorType op)
     } else {
         assert(false);
     }
+
+    return {res, Expression::Deleter{}};
+}
+
+SharedExpr
+identifier(const std::string& str)
+{
+    auto res = new Expression{ET_var, {.name = str}};
+    return {res, Expression::Deleter{}};
+}
+
+SharedExpr
+number(i64 value)
+{
+    auto res = new Expression{ET_integer, {.value = value}};
+    return {res, Expression::Deleter{}};
+}
+
+SharedExpr
+integers(const std::vector<i64>& integers)
+{
+    auto res = new Expression{ET_list, {.integers = integers}};
+    return {res, Expression::Deleter{}};
+}
+
+SharedExpr
+operation(const SharedExpr& left, OperatorType op, const SharedExpr& right)
+{
+    auto res = new Expression{ET_operator, {}};
+    res->members.op = op;
+    res->members.left = left;
+    res->members.right = right;
 
     return {res, Expression::Deleter{}};
 }
@@ -225,7 +271,7 @@ evaluate(const std::shared_ptr<Expression>& e)
                 case OT_minus: /* Fallthrough */
                 case OT_mul:   /* Fallthrough */
                 case OT_div:
-                    assert(false); /* unsupported*/
+                    assert(false); /* Syntax error */
                 default:
                     __builtin_unreachable();
                 }
@@ -255,7 +301,56 @@ evaluate(const std::shared_ptr<Expression>& e)
     }
 }
 
-int
-main()
+void
+print(const SharedExpr& e_)
 {
+    auto reduced = evaluate(e_);
+    assert(IS_IRREDUCIBLE(reduced->type));
+
+    switch (reduced->type) {
+    case ET_var:
+        __builtin_unreachable();
+    case ET_integer:
+        fmt::print("int: {}\n", reduced->members.value);
+        break;
+    case ET_bool:
+        fmt::print("bool: {}\n", reduced->members.bvalue);
+        break;
+    case ET_list:
+        fmt::print("list: {}\n", reduced->members.integers);
+        break;
+    case ET_operator:
+        __builtin_unreachable();
+    }
+}
+
+yyFlexLexer* lexer;
+
+int
+yylex(yy::parser::semantic_type* yylval, yy::parser::location_type* yylloc)
+{
+    yylloc->begin.line = lexer->lineno();
+    int token = lexer->yylex();
+    if (token == yy::parser::token::IDENTIFIER || token == yy::parser::token::NUMBER) {
+        yylval->build(std::string(lexer->YYText()));
+    }
+    return token;
+}
+
+void
+yy::parser::error(const location_type& loc, const std::string& msg)
+{
+    std::cerr << "Line " << loc.begin.line << ": " << msg << std::endl;
+    exit(1);
+}
+
+int
+main(int argc, char** argv)
+{
+    std::ifstream in(argv[1]);
+
+    lexer = new yyFlexLexer(&in);
+    yy::parser parser;
+    parser.parse();
+    delete lexer;
 }
