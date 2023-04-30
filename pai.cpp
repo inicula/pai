@@ -11,6 +11,7 @@
 #define IS_IRREDUCIBLE(expr_type)                                                             \
     (expr_type == ET_integer || expr_type == ET_bool || expr_type == ET_list)
 
+static yyFlexLexer* lexer;
 static std::unordered_map<std::string, SharedExpr> vars;
 
 void
@@ -329,8 +330,6 @@ print(const SharedExpr& e_)
     }
 }
 
-yyFlexLexer* lexer;
-
 int
 yylex(yy::parser::semantic_type* yylval, yy::parser::location_type* yylloc)
 {
@@ -345,14 +344,14 @@ yylex(yy::parser::semantic_type* yylval, yy::parser::location_type* yylloc)
 void
 yy::parser::error(const location_type& loc, const std::string& msg)
 {
-    std::cerr << "Line " << loc.begin.line << ": " << msg << std::endl;
-    exit(1);
+    fmt::print(stderr, "Line {}: {}\n", loc.begin.line, msg);
+    exit(EXIT_FAILURE);
 }
 
 int
 main(int argc, char** argv)
 {
-    pexit(argc == 2, "Usage: pai <input-file>");
+    pexit(argc == 2, "Usage: pai <input-file>\n");
 
     std::ifstream in(argv[1]);
     lexer = new yyFlexLexer(&in);
