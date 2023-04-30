@@ -56,6 +56,7 @@ program:
 exprs:
      %empty {
         $$ = new std::vector<SharedExpr>();
+        *$$ = {};
      }
 |
      exprs expr {
@@ -129,6 +130,6 @@ bin_op:
     DOUBLE_PIPE  { $$ = OT_or;      } |
     LESS         { $$ = OT_less;    } |
     GREATER      { $$ = OT_greater; } |
-    DOUBLE_EQUAL { $$ = OT_equal;      }
+    DOUBLE_EQUAL { $$ = OT_equal;   }
 
 %%

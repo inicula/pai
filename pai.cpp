@@ -26,7 +26,7 @@ pexit(bool cond, const char* fmt_, auto&&... args)
 SharedExpr
 add(const SharedExpr& left, const SharedExpr& right)
 {
-    auto res = new Expression{ET_integer, {}};
+    auto res = new Expression{ET_integer, {.value = {}}};
 
     if (left->type == ET_integer)
         res->members.value = left->members.value;
@@ -44,7 +44,7 @@ add(const SharedExpr& left, const SharedExpr& right)
 SharedExpr
 subtract(const SharedExpr& left, const SharedExpr& right)
 {
-    auto res = new Expression{ET_integer, {}};
+    auto res = new Expression{ET_integer, {.value = {}}};
 
     if (left->type == ET_integer)
         res->members.value = left->members.value;
@@ -62,7 +62,7 @@ subtract(const SharedExpr& left, const SharedExpr& right)
 SharedExpr
 multiply(const SharedExpr& left, const SharedExpr& right)
 {
-    auto res = new Expression{ET_integer, {}};
+    auto res = new Expression{ET_integer, {.value = {}}};
 
     if (left->type == ET_integer)
         res->members.value = left->members.value;
@@ -80,7 +80,7 @@ multiply(const SharedExpr& left, const SharedExpr& right)
 SharedExpr
 divide(const SharedExpr& left, const SharedExpr& right)
 {
-    auto res = new Expression{ET_integer, {}};
+    auto res = new Expression{ET_integer, {.value = {}}};
 
     if (left->type == ET_integer)
         res->members.value = left->members.value;
@@ -139,9 +139,8 @@ boolean(bool b)
 SharedExpr
 cmp(const SharedExpr& left, const SharedExpr& right, OperatorType op)
 {
-    auto res = new Expression{ET_bool, {}};
     if (left->type != right->type) {
-        res->members.bvalue = false;
+        return boolean(false);
     } else if (op == OT_less) {
         bool b;
         switch (left->type) {
@@ -201,9 +200,8 @@ cmp(const SharedExpr& left, const SharedExpr& right, OperatorType op)
         return boolean(b);
     } else {
         pexit(false, "Bug\n");
+        __builtin_unreachable();
     }
-
-    return {res, Expression::Deleter{}};
 }
 
 SharedExpr
@@ -230,11 +228,7 @@ integers(const std::vector<i64>& integers)
 SharedExpr
 operation(const SharedExpr& left, OperatorType op, const SharedExpr& right)
 {
-    auto res = new Expression{ET_operator, {}};
-    res->members.op = op;
-    res->members.left = left;
-    res->members.right = right;
-
+    auto res = new Expression{ET_operator, {.op = op, .left = left, .right = right}};
     return {res, Expression::Deleter{}};
 }
 

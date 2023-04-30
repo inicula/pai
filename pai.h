@@ -34,6 +34,9 @@ struct Expression {
         void
         operator()(Expression* e) const
         {
+            if (!e)
+                return;
+
             switch (e->type) {
             case ET_var:
                 std::destroy_at(&e->members.name);
@@ -50,6 +53,8 @@ struct Expression {
                 std::destroy_at(&e->members.right);
                 break;
             }
+
+            delete e;
         }
     };
 
