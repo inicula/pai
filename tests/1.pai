@@ -1,2 +1,15 @@
-a=-11
-a
+binrep=[]
+x=124
+
+while x>0 {
+    if x%2 {
+        binrep = [1] + binrep
+    }
+    if !(x%2) {
+        binrep = [0] + binrep
+    }
+
+    x=x/2
+}
+
+binrep

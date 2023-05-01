@@ -17,6 +17,7 @@ False                       return yy::parser::token::FALSE;
 "+"                         return yy::parser::token::PLUS;
 "-"                         return yy::parser::token::MINUS;
 "*"                         return yy::parser::token::STAR;
+"%"                         return yy::parser::token::MOD;
 "/"                         return yy::parser::token::SLASH;
 "<"                         return yy::parser::token::LESS;
 ">"                         return yy::parser::token::GREATER;

@@ -13,6 +13,7 @@ enum OperatorType : u8 {
     OT_minus,
     OT_mul,
     OT_div,
+    OT_mod,
     OT_and,
     OT_or,
     OT_neg,
@@ -34,6 +35,7 @@ enum StatementType : u8 {
     ST_expr,
     ST_if,
     ST_assign,
+    ST_while,
 };
 
 struct Expression {
@@ -109,7 +111,8 @@ struct Statement {
             case ST_expr:
                 std::destroy_at(&s->members.expr);
                 break;
-            case ST_if:
+            case ST_if: /* Fallthrough */
+            case ST_while:
                 std::destroy_at(&s->members.condition);
                 std::destroy_at(&s->members.body);
                 break;
@@ -150,6 +153,7 @@ SharedExpr add(const SharedExpr&, const SharedExpr&);
 SharedExpr subtract(const SharedExpr&, const SharedExpr&);
 SharedExpr multiply(const SharedExpr&, const SharedExpr&);
 SharedExpr divide(const SharedExpr&, const SharedExpr&);
+SharedExpr mod(const SharedExpr&, const SharedExpr&);
 SharedExpr concat(const SharedExpr&, const SharedExpr&);
 bool to_bool(const SharedExpr&);
 SharedExpr boolean(bool);
@@ -162,6 +166,7 @@ SharedExpr string(const std::string&);
 UniqStmt expression_stmt(const SharedExpr&);
 UniqStmt if_stmt(const SharedExpr&, std::vector<UniqStmt>&&);
 UniqStmt assignment(const std::string&, const SharedExpr&);
+UniqStmt while_stmt(const SharedExpr&, std::vector<UniqStmt>&&);
 std::shared_ptr<Expression> evaluate(const SharedExpr&);
 void execute(const UniqStmt&);
 void print(const SharedExpr&);

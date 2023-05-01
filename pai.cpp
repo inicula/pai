@@ -16,7 +16,8 @@
 #define LIST_TYPE ""
 #define STR_TYPE ""
 #endif
-#define IS_ARITH_OP(x) (x == OT_plus || x == OT_minus || x == OT_div || x == OT_mul)
+#define IS_ARITH_OP(x)                                                                        \
+    (x == OT_plus || x == OT_minus || x == OT_div || x == OT_mul || x == OT_mod)
 #define IS_LOGICAL(x) (x == OT_and || x == OT_or || x == OT_neg)
 #define IS_COMP(x) (x == OT_less || x == OT_greater || x == OT_equal)
 #define IS_IRREDUCIBLE(expr_type)                                                             \
@@ -112,6 +113,29 @@ divide(const SharedExpr& left, const SharedExpr& right)
         i64 d = right->members.bvalue;
         pexit(d, "Division by 0\n");
         res->members.value /= d;
+    }
+
+    return {res, Expression::Deleter{}};
+}
+
+SharedExpr
+mod(const SharedExpr& left, const SharedExpr& right)
+{
+    auto res = new Expression{ET_integer, {.value = {}}};
+
+    if (left->type == ET_integer)
+        res->members.value = left->members.value;
+    else
+        res->members.value = left->members.bvalue;
+
+    if (right->type == ET_integer) {
+        i64 d = right->members.value;
+        pexit(d, "Division by 0\n");
+        res->members.value %= d;
+    } else {
+        i64 d = right->members.bvalue;
+        pexit(d, "Division by 0\n");
+        res->members.value %= d;
     }
 
     return {res, Expression::Deleter{}};
@@ -287,6 +311,13 @@ assignment(const std::string& name, const SharedExpr& value)
     return UniqStmt{res};
 }
 
+UniqStmt
+while_stmt(const SharedExpr& cond, std::vector<UniqStmt>&& body)
+{
+    auto res = new Statement{ST_while, {.condition = cond, .body = std::move(body)}};
+    return UniqStmt{res};
+}
+
 std::shared_ptr<Expression>
 evaluate(const std::shared_ptr<Expression>& e)
 {
@@ -321,6 +352,8 @@ evaluate(const std::shared_ptr<Expression>& e)
                     return multiply(left_eval, right_eval);
                 case OT_div:
                     return divide(left_eval, right_eval);
+                case OT_mod:
+                    return mod(left_eval, right_eval);
                 default:
                     __builtin_unreachable();
                 }
@@ -331,6 +364,7 @@ evaluate(const std::shared_ptr<Expression>& e)
                 case OT_minus: /* Fallthrough */
                 case OT_mul:   /* Fallthrough */
                 case OT_div:
+                case OT_mod:
                     pexit(false, "Syntax error\n");
                 default:
                     __builtin_unreachable();
@@ -373,14 +407,20 @@ execute(const UniqStmt& stmt)
         print(stmt->members.expr);
         break;
     case ST_if:
-        if (!to_bool(evaluate(stmt->members.condition)))
-            break;
-
-        for (auto& stmt : stmt->members.body)
-            execute(stmt);
+        if (to_bool(evaluate(stmt->members.condition))) {
+            for (auto& stmt : stmt->members.body)
+                execute(stmt);
+        }
         break;
     case ST_assign:
         vars[stmt->members.id] = evaluate(stmt->members.val);
+        break;
+    case ST_while:
+        while (to_bool(evaluate(stmt->members.condition))) {
+            for (auto& stmt : stmt->members.body)
+                execute(stmt);
+        }
+        break;
     }
 }
 

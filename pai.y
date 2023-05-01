@@ -37,7 +37,7 @@ int yylex(yy::parser::semantic_type* yylval, yy::parser::location_type* yylloc);
 %left DOUBLE_EQUAL
 %left LESS GREATER
 %left PLUS MINUS
-%left STAR SLASH
+%left STAR SLASH MOD
 %right EXCL
 
 %type <SharedExpr> expr
@@ -53,7 +53,7 @@ program:
             execute(stmt);
         delete $1;
     }
-
+;
 stmts:
      %empty {
         $$ = new std::vector<UniqStmt>();
@@ -63,7 +63,7 @@ stmts:
         $1->emplace_back(std::move($2));
         $$ = $1;
      }
-
+;
 stmt:
     expr {
         $$ = expression_stmt($1);
@@ -74,10 +74,15 @@ stmt:
         delete $4;
     }
 |
+    WHILE expr OBRACE stmts CBRACE {
+        $$ = while_stmt($2, std::move(*$4));
+        delete $4;
+    }
+|
     IDENTIFIER EQUAL expr {
         $$ = assignment($1, $3);
     }
-
+;
 expr:
     IDENTIFIER {
         $$ = identifier($1);
@@ -104,6 +109,10 @@ expr:
         delete $2;
     }
 |
+    OBRAK CBRAK {
+        $$ = integers({});
+    }
+|
     expr PLUS expr {
         $$ = operation($1, OT_plus, $3);
     }
@@ -118,6 +127,10 @@ expr:
 |
     expr SLASH expr {
         $$ = operation($1, OT_div, $3);
+    }
+|
+    expr MOD expr {
+        $$ = operation($1, OT_mod, $3);
     }
 |
     expr DOUBLE_AMP expr {
@@ -155,7 +168,7 @@ expr:
     MINUS expr {
         $$ = operation(number(0), OT_minus, $2);
     }
-
+;
 numbers:
     NUMBER {
         i64 value;
@@ -174,5 +187,5 @@ numbers:
         $1->push_back(value);
         $$ = $1;
     }
-
+;
 %%
