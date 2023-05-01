@@ -127,7 +127,7 @@ concat(const SharedExpr& left, const SharedExpr& right)
             e->members.integers.push_back(el);
     } else {
         e = new Expression{ET_str, {.str = left->members.str}};
-        e->members.str += left->members.str;
+        e->members.str += right->members.str;
     }
 
     return {e, Expression::Deleter{}};
@@ -261,7 +261,8 @@ operation(const SharedExpr& left, OperatorType op, const SharedExpr& right)
 SharedExpr
 string(const std::string& str)
 {
-    auto res = new Expression{ET_str, {.str = str}};
+    pexit(str.size() >= 2, "Received string without quotes\n");
+    auto res = new Expression{ET_str, {.str = str.substr(1, str.size() - 2)}};
     return {res, Expression::Deleter{}};
 }
 
@@ -357,7 +358,7 @@ print(const SharedExpr& e_)
         fmt::print(LIST_TYPE "{}\n", reduced->members.integers);
         break;
     case ET_str:
-        fmt::print(STR_TYPE "{}\n", reduced->members.str);
+        fmt::print(STR_TYPE "'{}'\n", reduced->members.str);
         break;
     default:
         __builtin_unreachable();
