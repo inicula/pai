@@ -350,6 +350,9 @@ evaluate(const std::shared_ptr<Expression>& e)
 
     switch (e->type) {
     case ET_var:
+        pexit(vars.contains(e->members.name),
+              "Could not find variable id: {}\n",
+              e->members.name);
         return vars.at(e->members.name);
     case ET_integer: /* Fallthrough */
     case ET_bool:    /* Fallthrough */
