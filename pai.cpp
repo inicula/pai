@@ -290,6 +290,13 @@ string(const std::string& str)
     return {res, Expression::Deleter{}};
 }
 
+SharedExpr
+list_element(const SharedExpr& list, const SharedExpr& index)
+{
+    auto res = new Expression{ET_list_element, {.list = list, .index = index}};
+    return {res, Expression::Deleter{}};
+}
+
 UniqStmt
 expression_stmt(const SharedExpr& expr)
 {
@@ -400,6 +407,19 @@ evaluate(const std::shared_ptr<Expression>& e)
         } else {
             pexit(false, "Bug\n");
         }
+    }
+    case ET_list_element: {
+        auto list = evaluate(e->members.list);
+        pexit(list->type == ET_list, "Expected list\n");
+
+        auto index = evaluate(e->members.index);
+        pexit(index->type == ET_integer, "Expected integer\n");
+
+        auto idx = index->members.value;
+        pexit(idx >= 0 && usize(idx) <= list->members.integers.size(),
+              "List index out of bounds");
+
+        return number(list->members.integers[usize(idx)]);
     }
     default:
         __builtin_unreachable();

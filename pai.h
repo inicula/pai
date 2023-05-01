@@ -6,6 +6,7 @@
 #include <cassert>
 
 using u8 = uint8_t;
+using usize = uint64_t;
 using i64 = int64_t;
 
 enum OperatorType : u8 {
@@ -29,6 +30,7 @@ enum ExpressionType : u8 {
     ET_list,
     ET_str,
     ET_operator,
+    ET_list_element,
 };
 
 enum StatementType : u8 {
@@ -65,6 +67,10 @@ struct Expression {
                 std::destroy_at(&e->members.left);
                 std::destroy_at(&e->members.right);
                 break;
+            case ET_list_element:
+                std::destroy_at(&e->members.list);
+                std::destroy_at(&e->members.index);
+                break;
             }
 
             delete e;
@@ -92,6 +98,10 @@ struct Expression {
             OperatorType op;
             std::shared_ptr<Expression> left;
             std::shared_ptr<Expression> right;
+        };
+        struct {
+            std::shared_ptr<Expression> list;
+            std::shared_ptr<Expression> index;
         };
 
         ~U() {}
@@ -174,6 +184,7 @@ SharedExpr number(i64);
 SharedExpr integers(const std::vector<i64>&);
 SharedExpr operation(const SharedExpr& left, OperatorType op, const SharedExpr& right);
 SharedExpr string(const std::string&);
+SharedExpr list_element(const SharedExpr& list, const SharedExpr& index);
 UniqStmt expression_stmt(const SharedExpr&);
 UniqStmt if_stmt(const SharedExpr&, std::vector<UniqStmt>&&);
 UniqStmt assignment(const std::string&, const SharedExpr&);

@@ -120,6 +120,10 @@ expr:
         $$ = integers({});
     }
 |
+    expr OBRAK expr CBRAK {
+        $$ = list_element($1, $3);
+    }
+|
     expr PLUS expr {
         $$ = operation($1, OT_plus, $3);
     }
