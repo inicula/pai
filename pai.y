@@ -27,7 +27,7 @@ int yylex(yy::parser::semantic_type* yylval, yy::parser::location_type* yylloc);
 %token OBRACE
 %token CBRACE
 %token WHILE
-%token ASSIGN
+%token EQUAL
 %token <std::string> NUMBER
 %token <std::string> IDENTIFIER
 %token <std::string> STR_LITERAL
@@ -72,6 +72,10 @@ stmt:
     IF expr OBRACE stmts CBRACE {
         $$ = if_stmt($2, std::move(*$4));
         delete $4;
+    }
+|
+    IDENTIFIER EQUAL expr {
+        $$ = assignment($1, $3);
     }
 
 expr:
@@ -146,6 +150,10 @@ expr:
 |
     STR_LITERAL {
         $$ = string($1);
+    }
+|
+    MINUS expr {
+        $$ = operation(number(0), OT_minus, $2);
     }
 
 numbers:

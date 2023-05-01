@@ -280,6 +280,13 @@ if_stmt(const SharedExpr& cond, std::vector<UniqStmt>&& body)
     return UniqStmt{res};
 }
 
+UniqStmt
+assignment(const std::string& name, const SharedExpr& value)
+{
+    auto res = new Statement{ST_assign, {.id = name, .val = value}};
+    return UniqStmt{res};
+}
+
 std::shared_ptr<Expression>
 evaluate(const std::shared_ptr<Expression>& e)
 {
@@ -372,6 +379,8 @@ execute(const UniqStmt& stmt)
         for (auto& stmt : stmt->members.body)
             execute(stmt);
         break;
+    case ST_assign:
+        vars[stmt->members.id] = evaluate(stmt->members.val);
     }
 }
 

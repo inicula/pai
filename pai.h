@@ -33,6 +33,7 @@ enum ExpressionType : u8 {
 enum StatementType : u8 {
     ST_expr,
     ST_if,
+    ST_assign,
 };
 
 struct Expression {
@@ -112,6 +113,10 @@ struct Statement {
                 std::destroy_at(&s->members.condition);
                 std::destroy_at(&s->members.body);
                 break;
+            case ST_assign:
+                std::destroy_at(&s->members.id);
+                std::destroy_at(&s->members.val);
+                break;
             }
 
             delete s;
@@ -126,6 +131,10 @@ struct Statement {
         struct {
             SharedExpr condition;
             std::vector<std::unique_ptr<Statement, Statement::Deleter>> body;
+        };
+        struct {
+            std::string id;
+            SharedExpr val;
         };
 
         ~U() {}
@@ -152,6 +161,7 @@ SharedExpr operation(const SharedExpr& left, OperatorType op, const SharedExpr& 
 SharedExpr string(const std::string&);
 UniqStmt expression_stmt(const SharedExpr&);
 UniqStmt if_stmt(const SharedExpr&, std::vector<UniqStmt>&&);
+UniqStmt assignment(const std::string&, const SharedExpr&);
 std::shared_ptr<Expression> evaluate(const SharedExpr&);
 void execute(const UniqStmt&);
 void print(const SharedExpr&);
