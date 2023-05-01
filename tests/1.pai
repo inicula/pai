@@ -1,14 +1,14 @@
-binrep=[]
-x=124
+binrep=[];
+x=124;
 
 while x>0 {
     if x%2 {
-        binrep = [1] + binrep
+        binrep = [1] + binrep;
     } else {
-        binrep = [0] + binrep
+        binrep = [0] + binrep;
     }
 
-    x=x/2
+    x=x/2;
 }
 
-binrep
+binrep;

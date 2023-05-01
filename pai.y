@@ -17,6 +17,7 @@ int yylex(yy::parser::semantic_type* yylval, yy::parser::location_type* yylloc);
 
 %token IF
 %token ELSE
+%token SCOL
 %token TRUE
 %token FALSE
 %token COMMA
@@ -40,6 +41,7 @@ int yylex(yy::parser::semantic_type* yylval, yy::parser::location_type* yylloc);
 %left PLUS MINUS
 %left STAR SLASH MOD
 %right EXCL
+%left DOLLAR
 
 %type <SharedExpr> expr
 %type <UniqStmt> stmt
@@ -67,7 +69,7 @@ stmts:
      }
 ;
 stmt:
-    expr {
+    expr SCOL {
         $$ = expression_stmt($1);
     }
 |
@@ -87,13 +89,17 @@ stmt:
         delete $4;
     }
 |
-    IDENTIFIER EQUAL expr {
+    IDENTIFIER EQUAL expr SCOL {
         $$ = assignment($1, $3);
     }
 ;
 expr:
     IDENTIFIER {
         $$ = identifier($1);
+    }
+|
+    IDENTIFIER DOLLAR expr {
+        $$ = builtin_function($1, $3);
     }
 |
     num {

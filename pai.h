@@ -31,6 +31,7 @@ enum ExpressionType : u8 {
     ET_str,
     ET_operator,
     ET_list_element,
+    ET_builtin_func,
 };
 
 enum StatementType : u8 {
@@ -71,6 +72,10 @@ struct Expression {
                 std::destroy_at(&e->members.list);
                 std::destroy_at(&e->members.index);
                 break;
+            case ET_builtin_func:
+                std::destroy_at(&e->members.func_name);
+                std::destroy_at(&e->members.arg);
+                break;
             }
 
             delete e;
@@ -102,6 +107,10 @@ struct Expression {
         struct {
             std::shared_ptr<Expression> list;
             std::shared_ptr<Expression> index;
+        };
+        struct {
+            std::string func_name;
+            std::shared_ptr<Expression> arg;
         };
 
         ~U() {}
@@ -185,6 +194,7 @@ SharedExpr integers(const std::vector<i64>&);
 SharedExpr operation(const SharedExpr& left, OperatorType op, const SharedExpr& right);
 SharedExpr string(const std::string&);
 SharedExpr list_element(const SharedExpr& list, const SharedExpr& index);
+SharedExpr builtin_function(const std::string&, const SharedExpr& index);
 UniqStmt expression_stmt(const SharedExpr&);
 UniqStmt if_stmt(const SharedExpr&, std::vector<UniqStmt>&&);
 UniqStmt assignment(const std::string&, const SharedExpr&);

@@ -297,6 +297,13 @@ list_element(const SharedExpr& list, const SharedExpr& index)
     return {res, Expression::Deleter{}};
 }
 
+SharedExpr
+builtin_function(const std::string& func_name, const SharedExpr& arg)
+{
+    auto res = new Expression{ET_builtin_func, {.func_name = func_name, .arg = arg}};
+    return {res, Expression::Deleter{}};
+}
+
 UniqStmt
 expression_stmt(const SharedExpr& expr)
 {
@@ -383,6 +390,7 @@ evaluate(const std::shared_ptr<Expression>& e)
                 case OT_div:
                 case OT_mod:
                     pexit(false, "Syntax error\n");
+                    break;
                 default:
                     __builtin_unreachable();
                 }
@@ -417,9 +425,27 @@ evaluate(const std::shared_ptr<Expression>& e)
 
         auto idx = index->members.value;
         pexit(idx >= 0 && usize(idx) <= list->members.integers.size(),
-              "List index out of bounds");
+              "List index out of bounds\n");
 
         return number(list->members.integers[usize(idx)]);
+    }
+    case ET_builtin_func: {
+        auto argument = evaluate(e->members.arg);
+        if (e->members.func_name == "len") {
+            switch (argument->type) {
+            case ET_str:
+                return number(i64(argument->members.str.size()));
+            case ET_list:
+                return number(i64(argument->members.integers.size()));
+            default:
+                pexit(false, "len() only accepts a list or a string\n");
+                __builtin_unreachable();
+            }
+        } else {
+            pexit(false, "Unknown function: {}\n", e->members.func_name);
+            __builtin_unreachable();
+        }
+        break;
     }
     default:
         __builtin_unreachable();
