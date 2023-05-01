@@ -44,6 +44,7 @@ int yylex(yy::parser::semantic_type* yylval, yy::parser::location_type* yylloc);
 %type <SharedExpr> expr
 %type <UniqStmt> stmt
 %type <std::vector<UniqStmt>*> stmts
+%type <i64> num
 %type <std::vector<i64>*> numbers
 
 %%
@@ -95,11 +96,8 @@ expr:
         $$ = identifier($1);
     }
 |
-    NUMBER {
-        i64 value;
-        pexit(std::from_chars($1.data(), $1.data() + $1.size(), value).ec == std::errc{},
-              "std::from_chars failed\n");
-        $$ = number(value);
+    num {
+        $$ = number($1);
     }
 |
     TRUE {
@@ -181,22 +179,30 @@ expr:
     }
 ;
 numbers:
+    num {
+        $$ = new std::vector<i64>();
+        $$->push_back($1);
+    }
+|
+    numbers COMMA num {
+        $1->push_back($3);
+        $$ = $1;
+    }
+;
+num:
     NUMBER {
         i64 value;
         pexit(std::from_chars($1.data(), $1.data() + $1.size(), value).ec == std::errc{},
               "std::from_chars failed\n");
-
-        $$ = new std::vector<i64>();
-        $$->push_back(value);
+        $$ = value;
     }
 |
-    numbers COMMA NUMBER {
+    MINUS NUMBER {
+        $2 = "-" + $2;
         i64 value;
-        pexit(std::from_chars($3.data(), $3.data() + $3.size(), value).ec == std::errc{},
+        pexit(std::from_chars($2.data(), $2.data() + $2.size(), value).ec == std::errc{},
               "std::from_chars failed\n");
-
-        $1->push_back(value);
-        $$ = $1;
+        $$ = value;
     }
 ;
 %%
