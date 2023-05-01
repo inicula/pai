@@ -16,6 +16,7 @@ int yylex(yy::parser::semantic_type* yylval, yy::parser::location_type* yylloc);
 %defines "pai_parser.h"
 
 %token IF
+%token ELSE
 %token TRUE
 %token FALSE
 %token COMMA
@@ -72,6 +73,12 @@ stmt:
     IF expr OBRACE stmts CBRACE {
         $$ = if_stmt($2, std::move(*$4));
         delete $4;
+    }
+|
+    IF expr OBRACE stmts CBRACE ELSE OBRACE stmts CBRACE {
+        $$ = if_else_stmt($2, std::move(*$4), std::move(*$8));
+        delete $4;
+        delete $8;
     }
 |
     WHILE expr OBRACE stmts CBRACE {

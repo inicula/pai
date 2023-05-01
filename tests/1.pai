@@ -4,8 +4,7 @@ x=124
 while x>0 {
     if x%2 {
         binrep = [1] + binrep
-    }
-    if !(x%2) {
+    } else {
         binrep = [0] + binrep
     }
 

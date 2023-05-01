@@ -10,6 +10,7 @@
 %%
 
 if                          return yy::parser::token::IF;
+else                        return yy::parser::token::ELSE;
 while                       return yy::parser::token::WHILE;
 True                        return yy::parser::token::TRUE;
 False                       return yy::parser::token::FALSE;

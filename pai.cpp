@@ -318,6 +318,16 @@ while_stmt(const SharedExpr& cond, std::vector<UniqStmt>&& body)
     return UniqStmt{res};
 }
 
+UniqStmt
+if_else_stmt(const SharedExpr& cond, std::vector<UniqStmt>&& i_body,
+             std::vector<UniqStmt>&& e_body)
+{
+    auto res = new Statement{
+        ST_if_else,
+        {.ie_condition = cond, .i_body = std::move(i_body), .e_body = std::move(e_body)}};
+    return UniqStmt{res};
+}
+
 std::shared_ptr<Expression>
 evaluate(const std::shared_ptr<Expression>& e)
 {
@@ -418,6 +428,15 @@ execute(const UniqStmt& stmt)
     case ST_while:
         while (to_bool(evaluate(stmt->members.condition))) {
             for (auto& stmt : stmt->members.body)
+                execute(stmt);
+        }
+        break;
+    case ST_if_else:
+        if (to_bool(evaluate(stmt->members.ie_condition))) {
+            for (auto& stmt : stmt->members.i_body)
+                execute(stmt);
+        } else {
+            for (auto& stmt : stmt->members.e_body)
                 execute(stmt);
         }
         break;
