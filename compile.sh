@@ -7,5 +7,5 @@ CXX=clang++
 
 bison -d pai.y
 flex pai.l
-sed 's/.*yywrap.*return.*//g' pai_lexer.cc -i
-$CXX $CXXFLAGS "$@" pai.cpp pai_lexer.cc pai_parser.cc -o pai -lfmt
+sed 's/.*yywrap.*return.*//g' pai_lexer.cpp -i
+$CXX $CXXFLAGS "$@" pai.cpp pai_lexer.cpp pai_parser.cpp -o pai -lfmt

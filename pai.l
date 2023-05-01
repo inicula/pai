@@ -5,7 +5,7 @@
 #include "pai_parser.h"
 %}
 
-%option outfile="pai_lexer.cc" header-file="pai_lexer.h"
+%option outfile="pai_lexer.cpp" header-file="pai_lexer.h"
 
 %%
 

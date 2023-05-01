@@ -12,7 +12,7 @@
 int yylex(yy::parser::semantic_type* yylval, yy::parser::location_type* yylloc);
 }
 
-%output  "pai_parser.cc"
+%output  "pai_parser.cpp"
 %defines "pai_parser.h"
 
 %token IF
