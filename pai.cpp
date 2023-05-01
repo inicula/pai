@@ -433,8 +433,9 @@ evaluate(const std::shared_ptr<Expression>& e)
         return number(list->members.integers[usize(idx)]);
     }
     case ET_builtin_func: {
-        auto argument = evaluate(e->members.arg);
         if (e->members.func_name == "len") {
+            auto argument = evaluate(e->members.arg);
+
             switch (argument->type) {
             case ET_str:
                 return number(i64(argument->members.str.size()));
@@ -444,6 +445,10 @@ evaluate(const std::shared_ptr<Expression>& e)
                 pexit(false, "len() only accepts a list or a string\n");
                 __builtin_unreachable();
             }
+        } else if (e->members.func_name == "read") {
+            i64 value;
+            std::cin >> value;
+            return number(value);
         } else {
             pexit(false, "Unknown function: {}\n", e->members.func_name);
             __builtin_unreachable();

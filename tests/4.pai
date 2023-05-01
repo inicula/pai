@@ -1,0 +1,23 @@
+# Read numbers from standard input and calculate their product
+
+"Input n:";
+n = read $ _;
+
+if n < 1 {
+    "Bad input";
+} else {
+    "Got n:";
+    n;
+
+    i = 0;
+    sum = 1;
+    while i < n {
+        "Input number";
+        x = read $ _;
+
+        sum = sum * x;
+        i = i + 1;
+    }
+
+    sum; # Print the sum
+}

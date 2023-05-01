@@ -1,14 +1,17 @@
-binrep=[];
-x=124;
+# Get the binary representation (as an array of 0/1) of a number from standard input
 
-while x>0 {
-    if x%2 {
+"Input the number:";
+x = read $ _;
+
+binrep = [];
+while x > 0 {
+    if x % 2 {
         binrep = [1] + binrep;
     } else {
         binrep = [0] + binrep;
     }
 
-    x=x/2;
+    x = x / 2;
 }
 
-binrep;
+binrep; # Print the vector
