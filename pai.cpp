@@ -266,6 +266,13 @@ string(const std::string& str)
     return {res, Expression::Deleter{}};
 }
 
+UniqStmt
+expression_stmt(const SharedExpr& expr)
+{
+    auto res = new Statement{ST_expr, {.expr = expr}};
+    return UniqStmt{res};
+}
+
 std::shared_ptr<Expression>
 evaluate(const std::shared_ptr<Expression>& e)
 {
@@ -338,6 +345,18 @@ evaluate(const std::shared_ptr<Expression>& e)
     }
     default:
         __builtin_unreachable();
+    }
+}
+
+void
+execute(const UniqStmt& stmt)
+{
+    if (!stmt)
+        return;
+
+    switch (stmt->type) {
+    case ST_expr:
+        print(stmt->members.expr);
     }
 }
 

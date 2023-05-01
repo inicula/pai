@@ -30,6 +30,10 @@ enum ExpressionType : u8 {
     ET_operator,
 };
 
+enum StatementType : u8 {
+    ST_expr,
+};
+
 struct Expression {
     struct Deleter {
         void
@@ -91,6 +95,36 @@ struct Expression {
 
 using SharedExpr = std::shared_ptr<Expression>;
 
+struct Statement {
+    struct Deleter {
+        void
+        operator()(Statement* s) const
+        {
+            if (!s)
+                return;
+
+            switch (s->type) {
+            case ST_expr:
+                std::destroy_at(&s->members.expr);
+                break;
+            }
+
+            delete s;
+        }
+    };
+
+    StatementType type;
+    union U {
+        struct {
+            SharedExpr expr;
+        };
+
+        ~U() {}
+    } members;
+};
+
+using UniqStmt = std::unique_ptr<Statement, Statement::Deleter>;
+
 #define pexit(...) pexit_(__FILE__, __LINE__, __VA_ARGS__)
 
 void pexit_(const char*, int, bool, const char*, auto&&...);
@@ -107,5 +141,7 @@ SharedExpr number(i64);
 SharedExpr integers(const std::vector<i64>&);
 SharedExpr operation(const SharedExpr& left, OperatorType op, const SharedExpr& right);
 SharedExpr string(const std::string&);
+UniqStmt expression_stmt(const SharedExpr&);
 std::shared_ptr<Expression> evaluate(const SharedExpr&);
+void execute(const UniqStmt&);
 void print(const SharedExpr&);

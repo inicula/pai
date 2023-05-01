@@ -41,29 +41,34 @@ int yylex(yy::parser::semantic_type* yylval, yy::parser::location_type* yylloc);
 %precedence EXCL
 
 %type <SharedExpr> expr
-%type <std::vector<SharedExpr>*> exprs
+%type <UniqStmt> stmt
+%type <std::vector<UniqStmt>*> stmts
 %type <std::vector<i64>*> numbers
 %type <OperatorType> bin_op
 
 %%
 
 program:
-    exprs {
-        for(auto e : *$1)
-            print(e);
+    stmts {
+        for (auto& stmt : *$1)
+            execute(stmt);
         delete $1;
     }
 
-exprs:
+stmts:
      %empty {
-        $$ = new std::vector<SharedExpr>();
-        *$$ = {};
+        $$ = new std::vector<UniqStmt>();
      }
 |
-     exprs expr {
-        $1->push_back($2);
+     stmts stmt {
+        $1->emplace_back(std::move($2));
         $$ = $1;
      }
+
+stmt:
+    expr {
+        $$ = expression_stmt($1);
+    }
 
 expr:
     IDENTIFIER {
