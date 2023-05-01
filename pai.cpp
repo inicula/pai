@@ -403,11 +403,10 @@ evaluate(const std::shared_ptr<Expression>& e)
             if (operation.op == OT_neg)
                 return boolean(!b_left_eval);
 
-            auto b_right_eval = to_bool(evaluate(operation.right));
             if (operation.op == OT_and)
-                return boolean(b_left_eval && b_right_eval);
+                return boolean(b_left_eval && to_bool(evaluate(operation.right)));
             else
-                return boolean(b_left_eval || b_right_eval);
+                return boolean(b_left_eval || to_bool(evaluate(operation.right)));
         } else if (IS_COMP(operation.op)) {
             auto left_eval = evaluate(operation.left);
             auto right_eval = evaluate(operation.right);
