@@ -3,10 +3,10 @@
 arr = [-77, 100, 50, 50, 50, 1, 2, 7, 3, 5, 1];
 n = len $ arr;
 
-ok = [];
+not_processed = [];
 i = 0;
 while i < n {
-    ok = ok + [1];
+    not_processed = not_processed + [1];
     i = i + 1;
 }
 
@@ -17,7 +17,7 @@ while times < n {
 
     i = 0;
     while i < n {
-        if ok[i] && min > arr[i] {
+        if not_processed[i] && min > arr[i] {
             min = arr[i];
             min_idx = i;
         }
@@ -25,20 +25,20 @@ while times < n {
         i = i + 1;
     }
 
-    min;
+    min; # Print the current minimum
 
-    new_ok = [];
+    tmp = [];
     i = 0;
     while i < n {
-        if i == min_idx || !ok[i] {
-            new_ok = new_ok + [0];
+        if i == min_idx || !not_processed[i] {
+            tmp = tmp + [0];
         } else {
-            new_ok = new_ok + [1];
+            tmp = tmp + [1];
         }
 
         i = i + 1;
     }
 
-    ok = new_ok;
+    not_processed = tmp;
     times = times + 1;
 }
