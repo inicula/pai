@@ -117,15 +117,13 @@ to_bool(const SharedExpr& e)
     pexit(IS_IRREDUCIBLE(e->type), "Expected irreducible type\n");
 
     switch (e->type) {
-    case ET_var:
-        __builtin_unreachable();
     case ET_integer:
         return e->members.value;
     case ET_bool:
         return e->members.bvalue;
     case ET_list:
         return !e->members.integers.empty();
-    case ET_operator:
+    default:
         __builtin_unreachable();
     }
 }
@@ -145,8 +143,6 @@ cmp(const SharedExpr& left, const SharedExpr& right, OperatorType op)
     } else if (op == OT_less) {
         bool b;
         switch (left->type) {
-        case ET_var:
-            __builtin_unreachable();
         case ET_integer:
             b = left->members.value < right->members.value;
             break;
@@ -156,7 +152,7 @@ cmp(const SharedExpr& left, const SharedExpr& right, OperatorType op)
         case ET_list:
             b = left->members.integers < right->members.integers;
             break;
-        case ET_operator:
+        default:
             __builtin_unreachable();
         }
 
@@ -164,8 +160,6 @@ cmp(const SharedExpr& left, const SharedExpr& right, OperatorType op)
     } else if (op == OT_greater) {
         bool b;
         switch (left->type) {
-        case ET_var:
-            __builtin_unreachable();
         case ET_integer:
             b = left->members.value > right->members.value;
             break;
@@ -175,7 +169,7 @@ cmp(const SharedExpr& left, const SharedExpr& right, OperatorType op)
         case ET_list:
             b = left->members.integers > right->members.integers;
             break;
-        case ET_operator:
+        default:
             __builtin_unreachable();
         }
 
@@ -183,8 +177,6 @@ cmp(const SharedExpr& left, const SharedExpr& right, OperatorType op)
     } else if (op == OT_equal) {
         bool b;
         switch (left->type) {
-        case ET_var:
-            __builtin_unreachable();
         case ET_integer:
             b = left->members.value == right->members.value;
             break;
@@ -194,7 +186,7 @@ cmp(const SharedExpr& left, const SharedExpr& right, OperatorType op)
         case ET_list:
             b = left->members.integers == right->members.integers;
             break;
-        case ET_operator:
+        default:
             __builtin_unreachable();
         }
 
@@ -314,8 +306,6 @@ print(const SharedExpr& e_)
     pexit(IS_IRREDUCIBLE(reduced->type), "Expected irreducible type\n");
 
     switch (reduced->type) {
-    case ET_var:
-        __builtin_unreachable();
     case ET_integer:
         fmt::print("int: {}\n", reduced->members.value);
         break;
@@ -325,7 +315,7 @@ print(const SharedExpr& e_)
     case ET_list:
         fmt::print("list: {}\n", reduced->members.integers);
         break;
-    case ET_operator:
+    default:
         __builtin_unreachable();
     }
 }
