@@ -390,7 +390,7 @@ evaluate(const std::shared_ptr<Expression>& e)
                     return concat(left_eval, right_eval);
                 case OT_minus: /* Fallthrough */
                 case OT_mul:   /* Fallthrough */
-                case OT_div:
+                case OT_div:   /* Fallthrough */
                 case OT_mod:
                     pexit(false, "Syntax error\n");
                     break;
