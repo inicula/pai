@@ -17,11 +17,9 @@ while times < n {
 
     i = 0;
     while i < n {
-        if ok[i] {
-            if min > arr[i] {
-                min = arr[i];
-                min_idx = i;
-            }
+        if ok[i] && min > arr[i] {
+            min = arr[i];
+            min_idx = i;
         }
 
         i = i + 1;
