@@ -5,21 +5,37 @@
 #include <fmt/core.h>
 #include <fmt/ranges.h>
 
+#ifdef SHOW_TYPES
+#define INT_TYPE "int:"
+#define BOOL_TYPE "bool"
+#define LIST_TYPE "list:"
+#define STR_TYPE "string:"
+#else
+#define INT_TYPE ""
+#define BOOL_TYPE ""
+#define LIST_TYPE ""
+#define STR_TYPE ""
+#endif
 #define IS_ARITH_OP(x) (x == OT_plus || x == OT_minus || x == OT_div || x == OT_mul)
 #define IS_LOGICAL(x) (x == OT_and || x == OT_or || x == OT_neg)
 #define IS_COMP(x) (x == OT_less || x == OT_greater || x == OT_equal)
 #define IS_IRREDUCIBLE(expr_type)                                                             \
-    (expr_type == ET_integer || expr_type == ET_bool || expr_type == ET_list)
+    (expr_type == ET_integer || expr_type == ET_bool || expr_type == ET_list ||               \
+     expr_type == ET_str)
 
 static yyFlexLexer* lexer;
 static std::unordered_map<std::string, SharedExpr> vars;
 
 void
-pexit(bool cond, const char* fmt_, auto&&... args)
+pexit_(const char* file_name, int line, bool cond, const char* fmt_, auto&&... args)
 {
     if (!cond) {
-        auto fmt = "Error: " + std::string(fmt_);
-        fmt::print(stderr, fmt::runtime(fmt), std::forward<decltype(args)>(args)...);
+        auto fmt = "[{}:{}] Error: " + std::string(fmt_);
+        fmt::print(stderr,
+                   fmt::runtime(fmt),
+                   file_name,
+                   line,
+                   std::forward<decltype(args)>(args)...);
         exit(EXIT_FAILURE);
     }
 }
@@ -104,11 +120,17 @@ divide(const SharedExpr& left, const SharedExpr& right)
 SharedExpr
 concat(const SharedExpr& left, const SharedExpr& right)
 {
-    auto res = new Expression{ET_list, {.integers = left->members.integers}};
-    for (auto& el : right->members.integers)
-        res->members.integers.push_back(el);
+    Expression* e = nullptr;
+    if (left->type == ET_list) {
+        e = new Expression{ET_list, {.integers = left->members.integers}};
+        for (auto& el : right->members.integers)
+            e->members.integers.push_back(el);
+    } else {
+        e = new Expression{ET_str, {.str = left->members.str}};
+        e->members.str += left->members.str;
+    }
 
-    return {res, Expression::Deleter{}};
+    return {e, Expression::Deleter{}};
 }
 
 bool
@@ -123,6 +145,8 @@ to_bool(const SharedExpr& e)
         return e->members.bvalue;
     case ET_list:
         return !e->members.integers.empty();
+    case ET_str:
+        return !e->members.str.empty();
     default:
         __builtin_unreachable();
     }
@@ -152,6 +176,9 @@ cmp(const SharedExpr& left, const SharedExpr& right, OperatorType op)
         case ET_list:
             b = left->members.integers < right->members.integers;
             break;
+        case ET_str:
+            b = left->members.str < right->members.str;
+            break;
         default:
             __builtin_unreachable();
         }
@@ -169,6 +196,9 @@ cmp(const SharedExpr& left, const SharedExpr& right, OperatorType op)
         case ET_list:
             b = left->members.integers > right->members.integers;
             break;
+        case ET_str:
+            b = left->members.str > right->members.str;
+            break;
         default:
             __builtin_unreachable();
         }
@@ -185,6 +215,9 @@ cmp(const SharedExpr& left, const SharedExpr& right, OperatorType op)
             break;
         case ET_list:
             b = left->members.integers == right->members.integers;
+            break;
+        case ET_str:
+            b = left->members.str == right->members.str;
             break;
         default:
             __builtin_unreachable();
@@ -225,6 +258,13 @@ operation(const SharedExpr& left, OperatorType op, const SharedExpr& right)
     return {res, Expression::Deleter{}};
 }
 
+SharedExpr
+string(const std::string& str)
+{
+    auto res = new Expression{ET_str, {.str = str}};
+    return {res, Expression::Deleter{}};
+}
+
 std::shared_ptr<Expression>
 evaluate(const std::shared_ptr<Expression>& e)
 {
@@ -236,7 +276,8 @@ evaluate(const std::shared_ptr<Expression>& e)
         return vars.at(e->members.name);
     case ET_integer: /* Fallthrough */
     case ET_bool:    /* Fallthrough */
-    case ET_list:
+    case ET_list:    /* Fallthrough */
+    case ET_str:
         return e;
     case ET_operator: {
         auto& operation = e->members;
@@ -261,7 +302,7 @@ evaluate(const std::shared_ptr<Expression>& e)
                 default:
                     __builtin_unreachable();
                 }
-            } else if (left_eval->type == ET_list) {
+            } else if (left_eval->type == ET_list || left_eval->type == ET_str) {
                 switch (operation.op) {
                 case OT_plus:
                     return concat(left_eval, right_eval);
@@ -307,13 +348,16 @@ print(const SharedExpr& e_)
 
     switch (reduced->type) {
     case ET_integer:
-        fmt::print("int: {}\n", reduced->members.value);
+        fmt::print(INT_TYPE "{}\n", reduced->members.value);
         break;
     case ET_bool:
-        fmt::print("bool: {}\n", reduced->members.bvalue);
+        fmt::print(BOOL_TYPE "{}\n", reduced->members.bvalue ? "True" : "False");
         break;
     case ET_list:
-        fmt::print("list: {}\n", reduced->members.integers);
+        fmt::print(LIST_TYPE "{}\n", reduced->members.integers);
+        break;
+    case ET_str:
+        fmt::print(STR_TYPE "{}\n", reduced->members.str);
         break;
     default:
         __builtin_unreachable();
@@ -325,7 +369,8 @@ yylex(yy::parser::semantic_type* yylval, yy::parser::location_type* yylloc)
 {
     yylloc->begin.line = lexer->lineno();
     int token = lexer->yylex();
-    if (token == yy::parser::token::IDENTIFIER || token == yy::parser::token::NUMBER) {
+    if (token == yy::parser::token::IDENTIFIER || token == yy::parser::token::NUMBER ||
+        token == yy::parser::token::STR_LITERAL) {
         yylval->build(std::string(lexer->YYText()));
     }
     return token;
@@ -341,7 +386,7 @@ yy::parser::error(const location_type& loc, const std::string& msg)
 int
 main(int argc, char** argv)
 {
-    pexit(argc == 2, "Usage: pai <input-file>\n");
+    pexit(argc == 2, "Usage: pai [<input-file>]\n");
 
     std::ifstream in(argv[1]);
     lexer = new yyFlexLexer(&in);

@@ -30,6 +30,7 @@ int yylex(yy::parser::semantic_type* yylval, yy::parser::location_type* yylloc);
 %token ASSIGN
 %token <std::string> NUMBER
 %token <std::string> IDENTIFIER
+%token <std::string> STR_LITERAL
 
 %left DOUBLE_PIPE
 %left DOUBLE_AMP
@@ -100,6 +101,10 @@ expr:
 |
     OPAREN expr CPAREN {
         $$ = $2;
+    }
+|
+    STR_LITERAL {
+        $$ = string($1);
     }
 
 numbers:

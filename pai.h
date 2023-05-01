@@ -26,6 +26,7 @@ enum ExpressionType : u8 {
     ET_integer,
     ET_bool,
     ET_list,
+    ET_str,
     ET_operator,
 };
 
@@ -48,6 +49,9 @@ struct Expression {
             case ET_list:
                 std::destroy_at(&e->members.integers);
                 break;
+            case ET_str:
+                std::destroy_at(&e->members.str);
+                break;
             case ET_operator:
                 std::destroy_at(&e->members.left);
                 std::destroy_at(&e->members.right);
@@ -60,6 +64,9 @@ struct Expression {
 
     ExpressionType type;
     union U {
+        struct {
+            std::string str;
+        };
         struct {
             std::string name;
         };
@@ -84,7 +91,9 @@ struct Expression {
 
 using SharedExpr = std::shared_ptr<Expression>;
 
-void pexit(bool, const char*, auto&&...);
+#define pexit(...) pexit_(__FILE__, __LINE__, __VA_ARGS__)
+
+void pexit_(const char*, int, bool, const char*, auto&&...);
 SharedExpr add(const SharedExpr&, const SharedExpr&);
 SharedExpr subtract(const SharedExpr&, const SharedExpr&);
 SharedExpr multiply(const SharedExpr&, const SharedExpr&);
@@ -97,5 +106,6 @@ SharedExpr identifier(const std::string&);
 SharedExpr number(i64);
 SharedExpr integers(const std::vector<i64>&);
 SharedExpr operation(const SharedExpr& left, OperatorType op, const SharedExpr& right);
+SharedExpr string(const std::string&);
 std::shared_ptr<Expression> evaluate(const SharedExpr&);
 void print(const SharedExpr&);
