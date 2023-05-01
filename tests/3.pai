@@ -27,6 +27,7 @@ while times < n {
 
     min; # Print the current minimum
 
+    # Add min_idx to the list of processed indexes
     tmp = [];
     i = 0;
     while i < n {
@@ -39,6 +40,8 @@ while times < n {
         i = i + 1;
     }
 
+    # Overwrite the old list 
     not_processed = tmp;
+
     times = times + 1;
 }
