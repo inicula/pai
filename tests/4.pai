@@ -10,14 +10,14 @@ if n < 1 {
     n;
 
     i = 0;
-    sum = 1;
+    prod = 1;
     while i < n {
         "Input number";
         x = read $ _;
 
-        sum = sum * x;
+        prod = prod * x;
         i = i + 1;
     }
 
-    sum; # Print the sum
+    prod; # Print the product
 }
