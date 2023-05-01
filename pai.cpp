@@ -273,6 +273,13 @@ expression_stmt(const SharedExpr& expr)
     return UniqStmt{res};
 }
 
+UniqStmt
+if_stmt(const SharedExpr& cond, std::vector<UniqStmt>&& body)
+{
+    auto res = new Statement{ST_if, {.condition = cond, .body = std::move(body)}};
+    return UniqStmt{res};
+}
+
 std::shared_ptr<Expression>
 evaluate(const std::shared_ptr<Expression>& e)
 {
@@ -357,6 +364,14 @@ execute(const UniqStmt& stmt)
     switch (stmt->type) {
     case ST_expr:
         print(stmt->members.expr);
+        break;
+    case ST_if:
+        if (!to_bool(evaluate(stmt->members.condition)))
+            break;
+
+        for (auto& stmt : stmt->members.body)
+            execute(stmt);
+        break;
     }
 }
 

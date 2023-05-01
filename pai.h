@@ -9,7 +9,7 @@ using u8 = uint8_t;
 using i64 = int64_t;
 
 enum OperatorType : u8 {
-    OT_plus,
+    OT_plus = 0,
     OT_minus,
     OT_mul,
     OT_div,
@@ -32,6 +32,7 @@ enum ExpressionType : u8 {
 
 enum StatementType : u8 {
     ST_expr,
+    ST_if,
 };
 
 struct Expression {
@@ -107,6 +108,10 @@ struct Statement {
             case ST_expr:
                 std::destroy_at(&s->members.expr);
                 break;
+            case ST_if:
+                std::destroy_at(&s->members.condition);
+                std::destroy_at(&s->members.body);
+                break;
             }
 
             delete s;
@@ -117,6 +122,10 @@ struct Statement {
     union U {
         struct {
             SharedExpr expr;
+        };
+        struct {
+            SharedExpr condition;
+            std::vector<std::unique_ptr<Statement, Statement::Deleter>> body;
         };
 
         ~U() {}
@@ -142,6 +151,7 @@ SharedExpr integers(const std::vector<i64>&);
 SharedExpr operation(const SharedExpr& left, OperatorType op, const SharedExpr& right);
 SharedExpr string(const std::string&);
 UniqStmt expression_stmt(const SharedExpr&);
+UniqStmt if_stmt(const SharedExpr&, std::vector<UniqStmt>&&);
 std::shared_ptr<Expression> evaluate(const SharedExpr&);
 void execute(const UniqStmt&);
 void print(const SharedExpr&);

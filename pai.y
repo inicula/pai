@@ -38,13 +38,12 @@ int yylex(yy::parser::semantic_type* yylval, yy::parser::location_type* yylloc);
 %left LESS GREATER
 %left PLUS MINUS
 %left STAR SLASH
-%precedence EXCL
+%right EXCL
 
 %type <SharedExpr> expr
 %type <UniqStmt> stmt
 %type <std::vector<UniqStmt>*> stmts
 %type <std::vector<i64>*> numbers
-%type <OperatorType> bin_op
 
 %%
 
@@ -68,6 +67,11 @@ stmts:
 stmt:
     expr {
         $$ = expression_stmt($1);
+    }
+|
+    IF expr OBRACE stmts CBRACE {
+        $$ = if_stmt($2, std::move(*$4));
+        delete $4;
     }
 
 expr:
@@ -96,8 +100,40 @@ expr:
         delete $2;
     }
 |
-    expr bin_op expr {
-        $$ = operation($1, $2, $3);
+    expr PLUS expr {
+        $$ = operation($1, OT_plus, $3);
+    }
+|
+    expr MINUS expr {
+        $$ = operation($1, OT_minus, $3);
+    }
+|
+    expr STAR expr {
+        $$ = operation($1, OT_mul, $3);
+    }
+|
+    expr SLASH expr {
+        $$ = operation($1, OT_div, $3);
+    }
+|
+    expr DOUBLE_AMP expr {
+        $$ = operation($1, OT_and, $3);
+    }
+|
+    expr DOUBLE_PIPE expr {
+        $$ = operation($1, OT_or, $3);
+    }
+|
+    expr LESS expr {
+        $$ = operation($1, OT_less, $3);
+    }
+|
+    expr GREATER expr {
+        $$ = operation($1, OT_greater, $3);
+    }
+|
+    expr DOUBLE_EQUAL expr {
+        $$ = operation($1, OT_equal, $3);
     }
 |
     EXCL expr {
@@ -130,16 +166,5 @@ numbers:
         $1->push_back(value);
         $$ = $1;
     }
-
-bin_op:
-    PLUS         { $$ = OT_plus;    } |
-    MINUS        { $$ = OT_minus;   } |
-    STAR         { $$ = OT_mul;     } |
-    SLASH        { $$ = OT_div;     } |
-    DOUBLE_AMP   { $$ = OT_and;     } |
-    DOUBLE_PIPE  { $$ = OT_or;      } |
-    LESS         { $$ = OT_less;    } |
-    GREATER      { $$ = OT_greater; } |
-    DOUBLE_EQUAL { $$ = OT_equal;   }
 
 %%
