@@ -17,8 +17,8 @@ Expression types:
 
 Statement types:
 
-* Expression-statement (prints the result of the expression: `1 + 2 + 3`)
-* Assignment (`mystring = "Hello, World!"`)
+* Expression-statement (prints the result of the expression: `1 + 2 + 3;`)
+* Assignment (`mystring = "Hello, World!";`)
 * If-statement (`if <expression> { <body...> }`)
 * If-else-statement (`if <expression> { <body...> } else { <body...> }`)
 * While-statement (`while <expression> { <body...> }`)
