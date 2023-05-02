@@ -284,6 +284,9 @@ SharedExpr
 identifier(const std::string &str)
 {
     auto res = new Expression{ET_var, {.uid = get_id(str)}};
+    if (res->members.uid == vars.size())
+        vars.emplace_back();
+
     return {res, Expression::Deleter{}};
 }
 
