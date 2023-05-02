@@ -8,7 +8,7 @@ Expression types:
 * variables
 * integers
 * booleans
-* read-only lists (`[1, 2, 3]`)
+* read-only generic lists (`[42, "Hello!", True, [-1, 1]]`)
 * read-only strings (`"mystring"`)
 * operations with `+`, `-`, etc... (`myvar + 1 < 10`)
 * list elements (i.e. `mylist[0]`)
