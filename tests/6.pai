@@ -1,0 +1,11 @@
+# Test break-statement
+
+i = 0;
+while i < 100 {
+    i;
+
+    if i == 10 {
+        break;
+    }
+    i = i + 1;
+}

@@ -342,6 +342,12 @@ if_else_stmt(const SharedExpr& cond, std::vector<UniqStmt>&& i_body,
     return UniqStmt{res};
 }
 
+UniqStmt
+break_stmt()
+{
+    return UniqStmt{new Statement{ST_break, {}}};
+}
+
 std::shared_ptr<Expression>
 evaluate(const std::shared_ptr<Expression>& e)
 {
@@ -459,11 +465,11 @@ evaluate(const std::shared_ptr<Expression>& e)
     }
 }
 
-void
+StatementResult
 execute(const UniqStmt& stmt)
 {
     if (!stmt)
-        return;
+        return SR_normal;
 
     switch (stmt->type) {
     case ST_expr:
@@ -471,8 +477,10 @@ execute(const UniqStmt& stmt)
         break;
     case ST_if:
         if (to_bool(evaluate(stmt->members.condition))) {
-            for (auto& stmt : stmt->members.body)
-                execute(stmt);
+            for (auto& stmt : stmt->members.body) {
+                if (execute(stmt) == SR_break)
+                    return SR_break;
+            }
         }
         break;
     case ST_assign:
@@ -480,20 +488,36 @@ execute(const UniqStmt& stmt)
         break;
     case ST_while:
         while (to_bool(evaluate(stmt->members.condition))) {
-            for (auto& stmt : stmt->members.body)
-                execute(stmt);
+            bool found_break = false;
+            for (auto& stmt : stmt->members.body) {
+                if (execute(stmt) == SR_break) {
+                    found_break = true;
+                    break;
+                }
+            }
+
+            if (found_break)
+                break;
         }
         break;
     case ST_if_else:
         if (to_bool(evaluate(stmt->members.ie_condition))) {
-            for (auto& stmt : stmt->members.i_body)
-                execute(stmt);
+            for (auto& stmt : stmt->members.i_body) {
+                if (execute(stmt) == SR_break)
+                    return SR_break;
+            }
         } else {
-            for (auto& stmt : stmt->members.e_body)
-                execute(stmt);
+            for (auto& stmt : stmt->members.e_body) {
+                if (execute(stmt) == SR_break)
+                    return SR_break;
+            }
         }
         break;
+    case ST_break:
+        return SR_break;
     }
+
+    return SR_normal;
 }
 
 void

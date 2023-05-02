@@ -35,11 +35,17 @@ enum ExpressionType : u8 {
 };
 
 enum StatementType : u8 {
-    ST_expr,
+    ST_expr = 0,
     ST_if,
     ST_assign,
     ST_while,
     ST_if_else,
+    ST_break,
+};
+
+enum StatementResult : u8 {
+    SR_normal,
+    SR_break,
 };
 
 struct Expression {
@@ -145,6 +151,8 @@ struct Statement {
                 std::destroy_at(&s->members.i_body);
                 std::destroy_at(&s->members.e_body);
                 break;
+            case ST_break:
+                break;
             }
 
             delete s;
@@ -200,6 +208,7 @@ UniqStmt if_stmt(const SharedExpr&, std::vector<UniqStmt>&&);
 UniqStmt assignment(const std::string&, const SharedExpr&);
 UniqStmt while_stmt(const SharedExpr&, std::vector<UniqStmt>&&);
 UniqStmt if_else_stmt(const SharedExpr&, std::vector<UniqStmt>&&, std::vector<UniqStmt>&&);
+UniqStmt break_stmt();
 std::shared_ptr<Expression> evaluate(const SharedExpr&);
-void execute(const UniqStmt&);
+StatementResult execute(const UniqStmt&);
 void print(const SharedExpr&);

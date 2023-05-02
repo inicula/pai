@@ -12,6 +12,7 @@
 if                          return yy::parser::token::IF;
 else                        return yy::parser::token::ELSE;
 while                       return yy::parser::token::WHILE;
+break                       return yy::parser::token::BREAK;
 True                        return yy::parser::token::TRUE;
 False                       return yy::parser::token::FALSE;
 "="                         return yy::parser::token::EQUAL;

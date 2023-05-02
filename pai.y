@@ -69,6 +69,10 @@ stmts:
      }
 ;
 stmt:
+    BREAK SCOL {
+        $$ = break_stmt();
+    }
+|
     expr SCOL {
         $$ = expression_stmt($1);
     }
