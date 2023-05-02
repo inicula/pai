@@ -6,7 +6,7 @@
 
 # Run with the provided maze example: ./pai tests/9.pai <tests/9.in
 
-# Maze
+# Read the maze (the dimensions nrows, ncols and nrows * ncols cells)
 nrows = read $ _;
 ncols = read $ _;
 mat = [];
