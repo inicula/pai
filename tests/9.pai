@@ -4,7 +4,7 @@
 # 2 = Player
 # 3 = Goal
 
-# Run with the provided maze example: ./pai tests/9.pai <test/9.in
+# Run with the provided maze example: ./pai tests/9.pai <tests/9.in
 
 # Maze
 nrows = read $ _;
