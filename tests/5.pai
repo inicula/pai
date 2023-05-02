@@ -1,4 +1,4 @@
-# Print the first 10 primes
+# Print the first 20 primes
 
 "First 20 primes:";
 found = 0;
