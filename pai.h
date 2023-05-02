@@ -44,7 +44,7 @@ enum StatementType : u8 {
 };
 
 enum StatementResult : u8 {
-    SR_normal,
+    SR_normal = 0,
     SR_break,
 };
 
