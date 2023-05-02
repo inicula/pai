@@ -45,27 +45,26 @@ int yylex(yy::parser::semantic_type *yylval, yy::parser::location_type *yylloc);
 
 %type <SharedExpr> expr
 %type <UniqStmt> stmt
-%type <std::vector<UniqStmt> *> stmts
+%type <std::vector<UniqStmt>> stmts
 %type <i64> num
-%type <std::vector<SharedExpr> *> list_elements
+%type <std::vector<SharedExpr>> list_elements
 
 %%
 
 program:
     stmts {
-        for (auto &stmt : *$1)
+        for (auto &stmt : $1)
             execute(stmt);
-        delete $1;
     }
 ;
 stmts:
      %empty {
-        $$ = new std::vector<UniqStmt>();
+        $$ = std::vector<UniqStmt>();
      }
 |
      stmts stmt {
-        $1->emplace_back(std::move($2));
-        $$ = $1;
+        $1.emplace_back(std::move($2));
+        $$ = std::move($1);
      }
 ;
 stmt:
@@ -78,19 +77,15 @@ stmt:
     }
 |
     IF expr OBRACE stmts CBRACE {
-        $$ = if_stmt($2, std::move(*$4));
-        delete $4;
+        $$ = if_stmt($2, std::move($4));
     }
 |
     IF expr OBRACE stmts CBRACE ELSE OBRACE stmts CBRACE {
-        $$ = if_else_stmt($2, std::move(*$4), std::move(*$8));
-        delete $4;
-        delete $8;
+        $$ = if_else_stmt($2, std::move($4), std::move($8));
     }
 |
     WHILE expr OBRACE stmts CBRACE {
-        $$ = while_stmt($2, std::move(*$4));
-        delete $4;
+        $$ = while_stmt($2, std::move($4));
     }
 |
     IDENTIFIER EQUAL expr SCOL {
@@ -119,9 +114,7 @@ expr:
     }
 |
     OBRAK list_elements CBRAK {
-        pexit($2, "Found nullptr\n");
-        $$ = list(*$2);
-        delete $2;
+        $$ = list($2);
     }
 |
     OBRAK CBRAK {
@@ -190,13 +183,13 @@ expr:
 ;
 list_elements:
     expr {
-        $$ = new std::vector<SharedExpr>();
-        $$->push_back($1);
+        $$ = std::vector<SharedExpr>();
+        $$.push_back($1);
     }
 |
     list_elements COMMA expr {
-        $1->push_back($3);
-        $$ = $1;
+        $1.push_back($3);
+        $$ = std::move($1);
     }
 ;
 num:
