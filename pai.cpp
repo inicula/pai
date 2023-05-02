@@ -16,6 +16,7 @@
 #define LIST_TYPE ""
 #define STR_TYPE ""
 #endif
+#define UNREACHABLE __builtin_unreachable()
 #define IS_ARITH_OP(x)                                                                        \
     (x == OT_plus || x == OT_minus || x == OT_div || x == OT_mul || x == OT_mod)
 #define IS_LOGICAL(x) (x == OT_and || x == OT_or || x == OT_neg)
@@ -172,7 +173,7 @@ to_bool(const SharedExpr& e)
     case ET_str:
         return !e->members.str.empty();
     default:
-        __builtin_unreachable();
+        UNREACHABLE;
     }
 }
 
@@ -204,7 +205,7 @@ cmp(const SharedExpr& left, const SharedExpr& right, OperatorType op)
             b = left->members.str < right->members.str;
             break;
         default:
-            __builtin_unreachable();
+            UNREACHABLE;
         }
 
         return boolean(b);
@@ -224,7 +225,7 @@ cmp(const SharedExpr& left, const SharedExpr& right, OperatorType op)
             b = left->members.str > right->members.str;
             break;
         default:
-            __builtin_unreachable();
+            UNREACHABLE;
         }
 
         return boolean(b);
@@ -244,13 +245,13 @@ cmp(const SharedExpr& left, const SharedExpr& right, OperatorType op)
             b = left->members.str == right->members.str;
             break;
         default:
-            __builtin_unreachable();
+            UNREACHABLE;
         }
 
         return boolean(b);
     } else {
         pexit(false, "Bug\n");
-        __builtin_unreachable();
+        UNREACHABLE;
     }
 }
 
@@ -388,7 +389,7 @@ evaluate(const std::shared_ptr<Expression>& e)
                 case OT_mod:
                     return mod(left_eval, right_eval);
                 default:
-                    __builtin_unreachable();
+                    UNREACHABLE;
                 }
             } else if (left_eval->type == ET_list || left_eval->type == ET_str) {
                 switch (operation.op) {
@@ -401,7 +402,7 @@ evaluate(const std::shared_ptr<Expression>& e)
                     pexit(false, "Syntax error\n");
                     break;
                 default:
-                    __builtin_unreachable();
+                    UNREACHABLE;
                 }
             }
         } else if (IS_LOGICAL(operation.op)) {
@@ -448,7 +449,7 @@ evaluate(const std::shared_ptr<Expression>& e)
                 return number(i64(argument->members.integers.size()));
             default:
                 pexit(false, "len() only accepts a list or a string\n");
-                __builtin_unreachable();
+                UNREACHABLE;
             }
         } else if (e->members.func_name == "read") {
             i64 value;
@@ -456,12 +457,12 @@ evaluate(const std::shared_ptr<Expression>& e)
             return number(value);
         } else {
             pexit(false, "Unknown function: {}\n", e->members.func_name);
-            __builtin_unreachable();
+            UNREACHABLE;
         }
         break;
     }
     default:
-        __builtin_unreachable();
+        UNREACHABLE;
     }
 }
 
@@ -538,7 +539,7 @@ print(const SharedExpr& e_)
         fmt::print(STR_TYPE "'{}'\n", reduced->members.str);
         break;
     default:
-        __builtin_unreachable();
+        UNREACHABLE;
     }
 }
 
