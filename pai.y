@@ -9,7 +9,7 @@
 }
 
 %code provides {
-int yylex(yy::parser::semantic_type* yylval, yy::parser::location_type* yylloc);
+int yylex(yy::parser::semantic_type *yylval, yy::parser::location_type *yylloc);
 }
 
 %output  "pai_parser.cpp"
@@ -45,15 +45,15 @@ int yylex(yy::parser::semantic_type* yylval, yy::parser::location_type* yylloc);
 
 %type <SharedExpr> expr
 %type <UniqStmt> stmt
-%type <std::vector<UniqStmt>*> stmts
+%type <std::vector<UniqStmt> *> stmts
 %type <i64> num
-%type <std::vector<i64>*> numbers
+%type <std::vector<i64> *> numbers
 
 %%
 
 program:
     stmts {
-        for (auto& stmt : *$1)
+        for (auto &stmt : *$1)
             execute(stmt);
         delete $1;
     }

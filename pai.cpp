@@ -25,11 +25,11 @@
     (expr_type == ET_integer || expr_type == ET_bool || expr_type == ET_list ||               \
      expr_type == ET_str)
 
-static yyFlexLexer* lexer;
+static yyFlexLexer *lexer;
 static std::unordered_map<std::string, SharedExpr> vars;
 
 void
-pexit_(const char* file_name, int line, bool cond, const char* fmt_, auto&&... args)
+pexit_(const char *file_name, int line, bool cond, const char *fmt_, auto &&...args)
 {
     if (!cond) {
         auto fmt = "[{}:{}] Error: " + std::string(fmt_);
@@ -43,7 +43,7 @@ pexit_(const char* file_name, int line, bool cond, const char* fmt_, auto&&... a
 }
 
 SharedExpr
-add(const SharedExpr& left, const SharedExpr& right)
+add(const SharedExpr &left, const SharedExpr &right)
 {
     auto res = new Expression{ET_integer, {.value = {}}};
 
@@ -61,7 +61,7 @@ add(const SharedExpr& left, const SharedExpr& right)
 }
 
 SharedExpr
-subtract(const SharedExpr& left, const SharedExpr& right)
+subtract(const SharedExpr &left, const SharedExpr &right)
 {
     auto res = new Expression{ET_integer, {.value = {}}};
 
@@ -79,7 +79,7 @@ subtract(const SharedExpr& left, const SharedExpr& right)
 }
 
 SharedExpr
-multiply(const SharedExpr& left, const SharedExpr& right)
+multiply(const SharedExpr &left, const SharedExpr &right)
 {
     auto res = new Expression{ET_integer, {.value = {}}};
 
@@ -97,7 +97,7 @@ multiply(const SharedExpr& left, const SharedExpr& right)
 }
 
 SharedExpr
-divide(const SharedExpr& left, const SharedExpr& right)
+divide(const SharedExpr &left, const SharedExpr &right)
 {
     auto res = new Expression{ET_integer, {.value = {}}};
 
@@ -120,7 +120,7 @@ divide(const SharedExpr& left, const SharedExpr& right)
 }
 
 SharedExpr
-mod(const SharedExpr& left, const SharedExpr& right)
+mod(const SharedExpr &left, const SharedExpr &right)
 {
     auto res = new Expression{ET_integer, {.value = {}}};
 
@@ -143,12 +143,12 @@ mod(const SharedExpr& left, const SharedExpr& right)
 }
 
 SharedExpr
-concat(const SharedExpr& left, const SharedExpr& right)
+concat(const SharedExpr &left, const SharedExpr &right)
 {
-    Expression* e = nullptr;
+    Expression *e = nullptr;
     if (left->type == ET_list) {
         e = new Expression{ET_list, {.integers = left->members.integers}};
-        for (auto& el : right->members.integers)
+        for (auto &el : right->members.integers)
             e->members.integers.push_back(el);
     } else {
         e = new Expression{ET_str, {.str = left->members.str}};
@@ -159,7 +159,7 @@ concat(const SharedExpr& left, const SharedExpr& right)
 }
 
 bool
-to_bool(const SharedExpr& e)
+to_bool(const SharedExpr &e)
 {
     pexit(IS_IRREDUCIBLE(e->type), "Expected irreducible type\n");
 
@@ -185,7 +185,7 @@ boolean(bool b)
 }
 
 SharedExpr
-cmp(const SharedExpr& left, const SharedExpr& right, OperatorType op)
+cmp(const SharedExpr &left, const SharedExpr &right, OperatorType op)
 {
     if (left->type != right->type) {
         return boolean(false);
@@ -256,7 +256,7 @@ cmp(const SharedExpr& left, const SharedExpr& right, OperatorType op)
 }
 
 SharedExpr
-identifier(const std::string& str)
+identifier(const std::string &str)
 {
     auto res = new Expression{ET_var, {.name = str}};
     return {res, Expression::Deleter{}};
@@ -270,21 +270,21 @@ number(i64 value)
 }
 
 SharedExpr
-integers(const std::vector<i64>& integers)
+integers(const std::vector<i64> &integers)
 {
     auto res = new Expression{ET_list, {.integers = integers}};
     return {res, Expression::Deleter{}};
 }
 
 SharedExpr
-operation(const SharedExpr& left, OperatorType op, const SharedExpr& right)
+operation(const SharedExpr &left, OperatorType op, const SharedExpr &right)
 {
     auto res = new Expression{ET_operator, {.op = op, .left = left, .right = right}};
     return {res, Expression::Deleter{}};
 }
 
 SharedExpr
-string(const std::string& str)
+string(const std::string &str)
 {
     pexit(str.size() >= 2, "Received string without quotes\n");
     auto res = new Expression{ET_str, {.str = str.substr(1, str.size() - 2)}};
@@ -292,50 +292,50 @@ string(const std::string& str)
 }
 
 SharedExpr
-list_element(const SharedExpr& list, const SharedExpr& index)
+list_element(const SharedExpr &list, const SharedExpr &index)
 {
     auto res = new Expression{ET_list_element, {.list = list, .index = index}};
     return {res, Expression::Deleter{}};
 }
 
 SharedExpr
-builtin_function(const std::string& func_name, const SharedExpr& arg)
+builtin_function(const std::string &func_name, const SharedExpr &arg)
 {
     auto res = new Expression{ET_builtin_func, {.func_name = func_name, .arg = arg}};
     return {res, Expression::Deleter{}};
 }
 
 UniqStmt
-expression_stmt(const SharedExpr& expr)
+expression_stmt(const SharedExpr &expr)
 {
     auto res = new Statement{ST_expr, {.expr = expr}};
     return UniqStmt{res};
 }
 
 UniqStmt
-if_stmt(const SharedExpr& cond, std::vector<UniqStmt>&& body)
+if_stmt(const SharedExpr &cond, std::vector<UniqStmt> &&body)
 {
     auto res = new Statement{ST_if, {.condition = cond, .body = std::move(body)}};
     return UniqStmt{res};
 }
 
 UniqStmt
-assignment(const std::string& name, const SharedExpr& value)
+assignment(const std::string &name, const SharedExpr &value)
 {
     auto res = new Statement{ST_assign, {.id = name, .val = value}};
     return UniqStmt{res};
 }
 
 UniqStmt
-while_stmt(const SharedExpr& cond, std::vector<UniqStmt>&& body)
+while_stmt(const SharedExpr &cond, std::vector<UniqStmt> &&body)
 {
     auto res = new Statement{ST_while, {.condition = cond, .body = std::move(body)}};
     return UniqStmt{res};
 }
 
 UniqStmt
-if_else_stmt(const SharedExpr& cond, std::vector<UniqStmt>&& i_body,
-             std::vector<UniqStmt>&& e_body)
+if_else_stmt(const SharedExpr &cond, std::vector<UniqStmt> &&i_body,
+             std::vector<UniqStmt> &&e_body)
 {
     auto res = new Statement{
         ST_if_else,
@@ -350,7 +350,7 @@ break_stmt()
 }
 
 std::shared_ptr<Expression>
-evaluate(const std::shared_ptr<Expression>& e)
+evaluate(const std::shared_ptr<Expression> &e)
 {
     if (!e)
         return nullptr;
@@ -367,7 +367,7 @@ evaluate(const std::shared_ptr<Expression>& e)
     case ET_str:
         return e;
     case ET_operator: {
-        auto& operation = e->members;
+        auto &operation = e->members;
 
         if (IS_ARITH_OP(operation.op)) {
             auto left_eval = evaluate(operation.left);
@@ -468,7 +468,7 @@ evaluate(const std::shared_ptr<Expression>& e)
 }
 
 StatementResult
-execute(const UniqStmt& stmt)
+execute(const UniqStmt &stmt)
 {
     if (!stmt)
         return SR_normal;
@@ -479,7 +479,7 @@ execute(const UniqStmt& stmt)
         break;
     case ST_if:
         if (to_bool(evaluate(stmt->members.condition))) {
-            for (auto& stmt : stmt->members.body) {
+            for (auto &stmt : stmt->members.body) {
                 if (execute(stmt) == SR_break)
                     return SR_break;
             }
@@ -491,7 +491,7 @@ execute(const UniqStmt& stmt)
     case ST_while:
         while (to_bool(evaluate(stmt->members.condition))) {
             bool found_break = false;
-            for (auto& stmt : stmt->members.body) {
+            for (auto &stmt : stmt->members.body) {
                 if (execute(stmt) == SR_break) {
                     found_break = true;
                     break;
@@ -503,11 +503,11 @@ execute(const UniqStmt& stmt)
         }
         break;
     case ST_if_else: {
-        std::vector<UniqStmt>* body = &stmt->members.e_body;
+        std::vector<UniqStmt> *body = &stmt->members.e_body;
         if (to_bool(evaluate(stmt->members.ie_condition)))
             body = &stmt->members.i_body;
 
-        for (auto& stmt : *body) {
+        for (auto &stmt : *body) {
             if (execute(stmt) == SR_break)
                 return SR_break;
         }
@@ -521,7 +521,7 @@ execute(const UniqStmt& stmt)
 }
 
 void
-print(const SharedExpr& e_)
+print(const SharedExpr &e_)
 {
     auto reduced = evaluate(e_);
     pexit(IS_IRREDUCIBLE(reduced->type), "Expected irreducible type\n");
@@ -545,7 +545,7 @@ print(const SharedExpr& e_)
 }
 
 int
-yylex(yy::parser::semantic_type* yylval, yy::parser::location_type* yylloc)
+yylex(yy::parser::semantic_type *yylval, yy::parser::location_type *yylloc)
 {
     yylloc->begin.line = lexer->lineno();
     int token = lexer->yylex();
@@ -557,14 +557,14 @@ yylex(yy::parser::semantic_type* yylval, yy::parser::location_type* yylloc)
 }
 
 void
-yy::parser::error(const location_type& loc, const std::string& msg)
+yy::parser::error(const location_type &loc, const std::string &msg)
 {
     fmt::print(stderr, "Line {}: {}\n", loc.begin.line, msg);
     exit(EXIT_FAILURE);
 }
 
 int
-main(int argc, char** argv)
+main(int argc, char **argv)
 {
     pexit(argc == 2, "Usage: pai <input-file>\n");
 

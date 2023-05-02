@@ -51,7 +51,7 @@ enum StatementResult : u8 {
 struct Expression {
     struct Deleter {
         void
-        operator()(Expression* e) const
+        operator()(Expression *e) const
         {
             if (!e)
                 return;
@@ -128,7 +128,7 @@ using SharedExpr = std::shared_ptr<Expression>;
 struct Statement {
     struct Deleter {
         void
-        operator()(Statement* s) const
+        operator()(Statement *s) const
         {
             if (!s)
                 return;
@@ -186,29 +186,29 @@ using UniqStmt = std::unique_ptr<Statement, Statement::Deleter>;
 
 #define pexit(...) pexit_(__FILE__, __LINE__, __VA_ARGS__)
 
-void pexit_(const char*, int, bool, const char*, auto&&...);
-SharedExpr add(const SharedExpr&, const SharedExpr&);
-SharedExpr subtract(const SharedExpr&, const SharedExpr&);
-SharedExpr multiply(const SharedExpr&, const SharedExpr&);
-SharedExpr divide(const SharedExpr&, const SharedExpr&);
-SharedExpr mod(const SharedExpr&, const SharedExpr&);
-SharedExpr concat(const SharedExpr&, const SharedExpr&);
-bool to_bool(const SharedExpr&);
+void pexit_(const char *, int, bool, const char *, auto &&...);
+SharedExpr add(const SharedExpr &, const SharedExpr &);
+SharedExpr subtract(const SharedExpr &, const SharedExpr &);
+SharedExpr multiply(const SharedExpr &, const SharedExpr &);
+SharedExpr divide(const SharedExpr &, const SharedExpr &);
+SharedExpr mod(const SharedExpr &, const SharedExpr &);
+SharedExpr concat(const SharedExpr &, const SharedExpr &);
+bool to_bool(const SharedExpr &);
 SharedExpr boolean(bool);
-SharedExpr cmp(const SharedExpr&, const SharedExpr&, OperatorType);
-SharedExpr identifier(const std::string&);
+SharedExpr cmp(const SharedExpr &, const SharedExpr &, OperatorType);
+SharedExpr identifier(const std::string &);
 SharedExpr number(i64);
-SharedExpr integers(const std::vector<i64>&);
-SharedExpr operation(const SharedExpr& left, OperatorType op, const SharedExpr& right);
-SharedExpr string(const std::string&);
-SharedExpr list_element(const SharedExpr& list, const SharedExpr& index);
-SharedExpr builtin_function(const std::string&, const SharedExpr& index);
-UniqStmt expression_stmt(const SharedExpr&);
-UniqStmt if_stmt(const SharedExpr&, std::vector<UniqStmt>&&);
-UniqStmt assignment(const std::string&, const SharedExpr&);
-UniqStmt while_stmt(const SharedExpr&, std::vector<UniqStmt>&&);
-UniqStmt if_else_stmt(const SharedExpr&, std::vector<UniqStmt>&&, std::vector<UniqStmt>&&);
+SharedExpr integers(const std::vector<i64> &);
+SharedExpr operation(const SharedExpr &left, OperatorType op, const SharedExpr &right);
+SharedExpr string(const std::string &);
+SharedExpr list_element(const SharedExpr &list, const SharedExpr &index);
+SharedExpr builtin_function(const std::string &, const SharedExpr &index);
+UniqStmt expression_stmt(const SharedExpr &);
+UniqStmt if_stmt(const SharedExpr &, std::vector<UniqStmt> &&);
+UniqStmt assignment(const std::string &, const SharedExpr &);
+UniqStmt while_stmt(const SharedExpr &, std::vector<UniqStmt> &&);
+UniqStmt if_else_stmt(const SharedExpr &, std::vector<UniqStmt> &&, std::vector<UniqStmt> &&);
 UniqStmt break_stmt();
-std::shared_ptr<Expression> evaluate(const SharedExpr&);
-StatementResult execute(const UniqStmt&);
-void print(const SharedExpr&);
+std::shared_ptr<Expression> evaluate(const SharedExpr &);
+StatementResult execute(const UniqStmt &);
+void print(const SharedExpr &);
