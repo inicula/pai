@@ -1,0 +1,20 @@
+# Print the first 10 primes
+
+"First 20 primes:";
+found = 0;
+x = 2;
+while found < 20 {
+    is_prime = True;
+    i = 2;
+    while i < x / 2 + 1 {
+        is_prime = is_prime && !(x % i == 0);
+        i = i + 1;
+    }
+
+    if is_prime {
+        found = found + 1;
+        x;
+    }
+
+    x = x + 1;
+}
