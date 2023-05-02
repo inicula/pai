@@ -4,16 +4,24 @@
 # 2 = Player
 # 3 = Goal
 
+# Run with the provided maze example: ./pai tests/9.pai <test/9.in
+
 # Maze
-mat = [
-    [2, 1, 0, 1, 0],
-    [0, 1, 0, 0, 0],
-    [0, 1, 0, 1, 0],
-    [0, 1, 0, 1, 0],
-    [0, 0, 0, 1, 3]
-];
-nrows = len $ mat;
-ncols = len $ mat[0];
+nrows = read $ _;
+ncols = read $ _;
+mat = [];
+i = 0;
+while i < nrows {
+    current_row = [];
+    j = 0;
+    while j < ncols {
+        current_row = current_row + [read $ _];
+        j = j + 1;
+    }
+
+    mat = mat + [current_row];
+    i = i + 1;
+}
 
 vis_mat = [];
 i = 0;
