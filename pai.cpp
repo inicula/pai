@@ -32,7 +32,7 @@ namespace ranges = std::ranges;
 static yyFlexLexer *lexer;
 static usize next_id = 0;
 static std::unordered_map<std::string, usize> ids;
-static std::unordered_map<usize, SharedExpr> vars;
+static std::vector<SharedExpr> vars;
 
 static usize
 get_id(const std::string &str)
@@ -382,9 +382,10 @@ evaluate(const std::shared_ptr<Expression> &e)
 
     switch (e->type) {
     case ET_var: {
-        auto it = vars.find(e->members.uid);
-        pexit(it != vars.end(), "Could not find variable id: {}\n", e->members.uid);
-        return it->second;
+        pexit(e->members.uid < vars.size(),
+              "Could not find variable id: {}\n",
+              e->members.uid);
+        return vars[e->members.uid];
     }
     case ET_integer: /* Fallthrough */
     case ET_bool:    /* Fallthrough */
@@ -516,6 +517,9 @@ execute(const UniqStmt &stmt)
         }
         break;
     case ST_assign:
+        pexit(stmt->members.uid <= vars.size(), "Bug\n");
+        if (stmt->members.uid == vars.size())
+            vars.emplace_back();
         vars[stmt->members.uid] = evaluate(stmt->members.val);
         break;
     case ST_while:
