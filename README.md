@@ -23,6 +23,10 @@ Statement types:
 * If-else-statement (`if <expression> { <body...> } else { <body...> }`)
 * While-statement (`while <expression> { <body...> }`)
 
+Other features:
+
+* List/String concatenation (`mylist = mylist + [1] + ["yep"];`, `mystring = "Hello," + " World!";`)
+
 ## Building
 
 ### Dependencies
