@@ -68,12 +68,12 @@ while l > 0 {
 
     if !vis_mat[pos[0]][pos[1]] {
         # Calculate the neighbour cells
-        left  = [pos[0] - 1, pos[1]];
-        right = [pos[0] + 1, pos[1]];
-        up    = [pos[0], pos[1] + 1];
-        down  = [pos[0], pos[1] - 1];
+        n1 = [pos[0] - 1, pos[1]];
+        n2 = [pos[0] + 1, pos[1]];
+        n3 = [pos[0], pos[1] + 1];
+        n4 = [pos[0], pos[1] - 1];
 
-        nei = [left, right, up, down];
+        nei = [n1, n2, n3, n4];
         i = 0;
         while i < 4 {
             # Check neighbour cell validity (not blocked and not out of bounds)
