@@ -65,7 +65,7 @@ struct Expression {
             case ET_bool:
                 break;
             case ET_list:
-                std::destroy_at(&e->members.integers);
+                std::destroy_at(&e->members.elements);
                 break;
             case ET_str:
                 std::destroy_at(&e->members.str);
@@ -103,7 +103,7 @@ struct Expression {
             bool bvalue;
         };
         struct {
-            std::vector<i64> integers;
+            std::vector<std::shared_ptr<Expression>> elements;
         };
         struct {
             OperatorType op;
@@ -195,10 +195,10 @@ SharedExpr mod(const SharedExpr &, const SharedExpr &);
 SharedExpr concat(const SharedExpr &, const SharedExpr &);
 bool to_bool(const SharedExpr &);
 SharedExpr boolean(bool);
-SharedExpr cmp(const SharedExpr &, const SharedExpr &, OperatorType);
+bool cmp(const SharedExpr &, const SharedExpr &, OperatorType);
 SharedExpr identifier(const std::string &);
 SharedExpr number(i64);
-SharedExpr integers(const std::vector<i64> &);
+SharedExpr list(const std::vector<SharedExpr> &);
 SharedExpr operation(const SharedExpr &left, OperatorType op, const SharedExpr &right);
 SharedExpr string(const std::string &);
 SharedExpr list_element(const SharedExpr &list, const SharedExpr &index);

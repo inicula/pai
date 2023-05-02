@@ -5,12 +5,7 @@ x = read $ _;
 
 binrep = [];
 while x > 0 {
-    if x % 2 {
-        binrep = [1] + binrep;
-    } else {
-        binrep = [0] + binrep;
-    }
-
+    binrep = [x % 2] + binrep;
     x = x / 2;
 }
 

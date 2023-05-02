@@ -31,12 +31,7 @@ while times < n {
     tmp = [];
     i = 0;
     while i < n {
-        if i == min_idx || !not_processed[i] {
-            tmp = tmp + [0];
-        } else {
-            tmp = tmp + [1];
-        }
-
+        tmp = tmp + [!(i == min_idx || !not_processed[i])];
         i = i + 1;
     }
 

@@ -47,7 +47,7 @@ int yylex(yy::parser::semantic_type *yylval, yy::parser::location_type *yylloc);
 %type <UniqStmt> stmt
 %type <std::vector<UniqStmt> *> stmts
 %type <i64> num
-%type <std::vector<i64> *> numbers
+%type <std::vector<SharedExpr> *> list_elements
 
 %%
 
@@ -118,14 +118,14 @@ expr:
         $$ = boolean(false);
     }
 |
-    OBRAK numbers CBRAK {
+    OBRAK list_elements CBRAK {
         pexit($2, "Found nullptr\n");
-        $$ = integers(*$2);
+        $$ = list(*$2);
         delete $2;
     }
 |
     OBRAK CBRAK {
-        $$ = integers({});
+        $$ = list({});
     }
 |
     expr OBRAK expr CBRAK {
@@ -188,13 +188,13 @@ expr:
         $$ = operation(number(0), OT_minus, $2);
     }
 ;
-numbers:
-    num {
-        $$ = new std::vector<i64>();
+list_elements:
+    expr {
+        $$ = new std::vector<SharedExpr>();
         $$->push_back($1);
     }
 |
-    numbers COMMA num {
+    list_elements COMMA expr {
         $1->push_back($3);
         $$ = $1;
     }
@@ -203,14 +203,6 @@ num:
     NUMBER {
         i64 value;
         pexit(std::from_chars($1.data(), $1.data() + $1.size(), value).ec == std::errc{},
-              "std::from_chars failed\n");
-        $$ = value;
-    }
-|
-    MINUS NUMBER {
-        $2 = "-" + $2;
-        i64 value;
-        pexit(std::from_chars($2.data(), $2.data() + $2.size(), value).ec == std::errc{},
               "std::from_chars failed\n");
         $$ = value;
     }

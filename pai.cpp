@@ -4,6 +4,10 @@
 #include <fstream>
 #include <fmt/core.h>
 #include <fmt/ranges.h>
+#include <ranges>
+#include <algorithm>
+
+namespace ranges = std::ranges;
 
 #ifdef SHOW_TYPES
 #define INT_TYPE "int:"
@@ -147,9 +151,9 @@ concat(const SharedExpr &left, const SharedExpr &right)
 {
     Expression *e = nullptr;
     if (left->type == ET_list) {
-        e = new Expression{ET_list, {.integers = left->members.integers}};
-        for (auto &el : right->members.integers)
-            e->members.integers.push_back(el);
+        e = new Expression{ET_list, {.elements = left->members.elements}};
+        for (auto &el : right->members.elements)
+            e->members.elements.push_back(el);
     } else {
         e = new Expression{ET_str, {.str = left->members.str}};
         e->members.str += right->members.str;
@@ -169,7 +173,7 @@ to_bool(const SharedExpr &e)
     case ET_bool:
         return e->members.bvalue;
     case ET_list:
-        return !e->members.integers.empty();
+        return !e->members.elements.empty();
     case ET_str:
         return !e->members.str.empty();
     default:
@@ -184,71 +188,74 @@ boolean(bool b)
     return {res, Expression::Deleter{}};
 }
 
-SharedExpr
+bool
 cmp(const SharedExpr &left, const SharedExpr &right, OperatorType op)
 {
     if (left->type != right->type) {
-        return boolean(false);
+        return false;
     } else if (op == OT_less) {
-        bool b;
         switch (left->type) {
         case ET_integer:
-            b = left->members.value < right->members.value;
-            break;
+            return left->members.value < right->members.value;
         case ET_bool:
-            b = left->members.bvalue < right->members.bvalue;
-            break;
-        case ET_list:
-            b = left->members.integers < right->members.integers;
-            break;
+            return left->members.bvalue < right->members.bvalue;
+        case ET_list: {
+            auto &v1 = left->members.elements;
+            auto &v2 = right->members.elements;
+            return ranges::lexicographical_compare(v1, v2, [](auto &e1, auto &e2) {
+                auto eval1 = evaluate(e1);
+                auto eval2 = evaluate(e2);
+
+                return cmp(eval1, eval2, OT_less);
+            });
+        }
         case ET_str:
-            b = left->members.str < right->members.str;
-            break;
+            return left->members.str < right->members.str;
         default:
             UNREACHABLE;
         }
-
-        return boolean(b);
     } else if (op == OT_greater) {
-        bool b;
         switch (left->type) {
         case ET_integer:
-            b = left->members.value > right->members.value;
-            break;
+            return left->members.value > right->members.value;
         case ET_bool:
-            b = left->members.bvalue > right->members.bvalue;
-            break;
-        case ET_list:
-            b = left->members.integers > right->members.integers;
-            break;
+            return left->members.bvalue > right->members.bvalue;
+        case ET_list: {
+            auto &v1 = left->members.elements;
+            auto &v2 = right->members.elements;
+            return ranges::lexicographical_compare(v2, v1, [](auto &e1, auto &e2) {
+                auto eval1 = evaluate(e1);
+                auto eval2 = evaluate(e2);
+
+                return cmp(eval1, eval2, OT_less);
+            });
+        }
         case ET_str:
-            b = left->members.str > right->members.str;
-            break;
+            return left->members.str > right->members.str;
         default:
             UNREACHABLE;
         }
-
-        return boolean(b);
     } else if (op == OT_equal) {
-        bool b;
         switch (left->type) {
         case ET_integer:
-            b = left->members.value == right->members.value;
-            break;
+            return left->members.value == right->members.value;
         case ET_bool:
-            b = left->members.bvalue == right->members.bvalue;
-            break;
-        case ET_list:
-            b = left->members.integers == right->members.integers;
-            break;
+            return left->members.bvalue == right->members.bvalue;
+        case ET_list: {
+            auto &v1 = left->members.elements;
+            auto &v2 = right->members.elements;
+            return ranges::equal(v1, v2, [](auto &e1, auto &e2) {
+                auto eval1 = evaluate(e1);
+                auto eval2 = evaluate(e2);
+
+                return cmp(eval1, eval2, OT_equal);
+            });
+        }
         case ET_str:
-            b = left->members.str == right->members.str;
-            break;
+            return left->members.str == right->members.str;
         default:
             UNREACHABLE;
         }
-
-        return boolean(b);
     } else {
         pexit(false, "Bug\n");
         UNREACHABLE;
@@ -270,9 +277,9 @@ number(i64 value)
 }
 
 SharedExpr
-integers(const std::vector<i64> &integers)
+list(const std::vector<SharedExpr> &elements)
 {
-    auto res = new Expression{ET_list, {.integers = integers}};
+    auto res = new Expression{ET_list, {.elements = elements}};
     return {res, Expression::Deleter{}};
 }
 
@@ -363,9 +370,14 @@ evaluate(const std::shared_ptr<Expression> &e)
         return vars.at(e->members.name);
     case ET_integer: /* Fallthrough */
     case ET_bool:    /* Fallthrough */
-    case ET_list:    /* Fallthrough */
     case ET_str:
         return e;
+    case ET_list: {
+        std::vector<SharedExpr> reduced_elements;
+        for (auto &el : e->members.elements)
+            reduced_elements.emplace_back(evaluate(el));
+        return list(reduced_elements);
+    }
     case ET_operator: {
         auto &operation = e->members;
 
@@ -420,7 +432,7 @@ evaluate(const std::shared_ptr<Expression> &e)
             pexit(IS_IRREDUCIBLE(left_eval->type) && IS_IRREDUCIBLE(right_eval->type),
                   "Expected irreducible types\n");
 
-            return cmp(left_eval, right_eval, operation.op);
+            return boolean(cmp(left_eval, right_eval, operation.op));
         } else {
             pexit(false, "Bug\n");
             UNREACHABLE;
@@ -434,10 +446,10 @@ evaluate(const std::shared_ptr<Expression> &e)
         pexit(index->type == ET_integer, "Expected integer\n");
 
         auto idx = index->members.value;
-        pexit(idx >= 0 && usize(idx) <= list->members.integers.size(),
+        pexit(idx >= 0 && usize(idx) <= list->members.elements.size(),
               "List index out of bounds\n");
 
-        return number(list->members.integers[usize(idx)]);
+        return evaluate(list->members.elements[usize(idx)]);
     }
     case ET_builtin_func: {
         if (e->members.func_name == "len") {
@@ -447,7 +459,7 @@ evaluate(const std::shared_ptr<Expression> &e)
             case ET_str:
                 return number(i64(argument->members.str.size()));
             case ET_list:
-                return number(i64(argument->members.integers.size()));
+                return number(i64(argument->members.elements.size()));
             default:
                 pexit(false, "len() only accepts a list or a string\n");
                 UNREACHABLE;
@@ -521,27 +533,40 @@ execute(const UniqStmt &stmt)
 }
 
 void
-print(const SharedExpr &e_)
+print_helper(const SharedExpr &e_)
 {
     auto reduced = evaluate(e_);
-    pexit(IS_IRREDUCIBLE(reduced->type), "Expected irreducible type\n");
 
+    bool first = true;
     switch (reduced->type) {
     case ET_integer:
-        fmt::print(INT_TYPE "{}\n", reduced->members.value);
+        fmt::print(INT_TYPE "{}", reduced->members.value);
         break;
     case ET_bool:
-        fmt::print(BOOL_TYPE "{}\n", reduced->members.bvalue ? "True" : "False");
+        fmt::print(BOOL_TYPE "{}", reduced->members.bvalue ? "True" : "False");
         break;
     case ET_list:
-        fmt::print(LIST_TYPE "{}\n", reduced->members.integers);
+        fmt::print("[");
+        for (auto &el : reduced->members.elements) {
+            fmt::print(fmt::runtime(first ? "" : ", "));
+            print_helper(el);
+            first = false;
+        }
+        fmt::print("]");
         break;
     case ET_str:
-        fmt::print(STR_TYPE "'{}'\n", reduced->members.str);
+        fmt::print(STR_TYPE "'{}'", reduced->members.str);
         break;
     default:
         UNREACHABLE;
     }
+}
+
+void
+print(const SharedExpr &e)
+{
+    print_helper(e);
+    fmt::print("\n");
 }
 
 int
