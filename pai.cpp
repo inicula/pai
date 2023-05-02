@@ -399,7 +399,7 @@ evaluate(const std::shared_ptr<Expression> &e)
                 case OT_mul:   /* Fallthrough */
                 case OT_div:   /* Fallthrough */
                 case OT_mod:
-                    pexit(false, "Syntax error\n");
+                    pexit(false, "Lists and string only support + (concatenation)\n");
                     UNREACHABLE;
                 default:
                     UNREACHABLE;
