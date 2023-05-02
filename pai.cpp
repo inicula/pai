@@ -400,7 +400,7 @@ evaluate(const std::shared_ptr<Expression>& e)
                 case OT_div:   /* Fallthrough */
                 case OT_mod:
                     pexit(false, "Syntax error\n");
-                    break;
+                    UNREACHABLE;
                 default:
                     UNREACHABLE;
                 }
@@ -423,6 +423,7 @@ evaluate(const std::shared_ptr<Expression>& e)
             return cmp(left_eval, right_eval, operation.op);
         } else {
             pexit(false, "Bug\n");
+            UNREACHABLE;
         }
     }
     case ET_list_element: {
