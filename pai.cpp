@@ -566,7 +566,7 @@ yy::parser::error(const location_type& loc, const std::string& msg)
 int
 main(int argc, char** argv)
 {
-    pexit(argc == 2, "Usage: pai [<input-file>]\n");
+    pexit(argc == 2, "Usage: pai <input-file>\n");
 
     std::ifstream in(argv[1]);
     lexer = new yyFlexLexer(&in);
