@@ -532,7 +532,7 @@ execute(const UniqStmt &stmt)
     return SR_normal;
 }
 
-void
+static void
 print_helper(const SharedExpr &e_)
 {
     auto reduced = evaluate(e_);
