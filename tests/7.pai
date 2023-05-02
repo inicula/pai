@@ -13,9 +13,7 @@ while i < n {
     if seq[i] < 0 {
         stack = stack + [seq[i]];
         l = l + 1;
-    }
-
-    if seq[i] > 0 {
+    } else {
         if l == 0 || !(stack[l - 1] == -seq[i]) {
             ok = False;
             break;
