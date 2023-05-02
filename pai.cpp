@@ -500,19 +500,17 @@ execute(const UniqStmt& stmt)
                 break;
         }
         break;
-    case ST_if_else:
-        if (to_bool(evaluate(stmt->members.ie_condition))) {
-            for (auto& stmt : stmt->members.i_body) {
-                if (execute(stmt) == SR_break)
-                    return SR_break;
-            }
-        } else {
-            for (auto& stmt : stmt->members.e_body) {
-                if (execute(stmt) == SR_break)
-                    return SR_break;
-            }
+    case ST_if_else: {
+        std::vector<UniqStmt>* body = &stmt->members.e_body;
+        if (to_bool(evaluate(stmt->members.ie_condition)))
+            body = &stmt->members.i_body;
+
+        for (auto& stmt : *body) {
+            if (execute(stmt) == SR_break)
+                return SR_break;
         }
         break;
+    }
     case ST_break:
         return SR_break;
     }
