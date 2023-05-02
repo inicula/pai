@@ -2,7 +2,7 @@
 
 set -xe
 
-CXXFLAGS="-std=c++20 -ggdb -O0 -fno-exceptions -fno-rtti -march=native -Wall -Wextra -Wconversion"
+CXXFLAGS="-std=c++20 -O3 -flto -fno-exceptions -fno-rtti -march=native -Wall -Wextra -Wconversion"
 CXX=clang++
 
 bison -d pai.y
