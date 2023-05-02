@@ -30,7 +30,25 @@ namespace ranges = std::ranges;
      expr_type == ET_str)
 
 static yyFlexLexer *lexer;
-static std::unordered_map<std::string, SharedExpr> vars;
+static usize next_id = 0;
+static std::unordered_map<std::string, usize> ids;
+static std::unordered_map<usize, SharedExpr> vars;
+
+static usize
+get_id(const std::string &str)
+{
+    usize id;
+
+    auto it = ids.find(str);
+    if (it == ids.end()) {
+        id = next_id++;
+        ids[str] = id;
+    } else {
+        id = it->second;
+    }
+
+    return id;
+}
 
 void
 pexit_(const char *file_name, int line, bool cond, const char *fmt_, auto &&...args)
@@ -265,7 +283,7 @@ cmp(const SharedExpr &left, const SharedExpr &right, OperatorType op)
 SharedExpr
 identifier(const std::string &str)
 {
-    auto res = new Expression{ET_var, {.name = str}};
+    auto res = new Expression{ET_var, {.uid = get_id(str)}};
     return {res, Expression::Deleter{}};
 }
 
@@ -329,7 +347,7 @@ if_stmt(const SharedExpr &cond, std::vector<UniqStmt> &&body)
 UniqStmt
 assignment(const std::string &name, const SharedExpr &value)
 {
-    auto res = new Statement{ST_assign, {.id = name, .val = value}};
+    auto res = new Statement{ST_assign, {.uid = get_id(name), .val = value}};
     return UniqStmt{res};
 }
 
@@ -363,11 +381,11 @@ evaluate(const std::shared_ptr<Expression> &e)
         return nullptr;
 
     switch (e->type) {
-    case ET_var:
-        pexit(vars.contains(e->members.name),
-              "Could not find variable id: {}\n",
-              e->members.name);
-        return vars.at(e->members.name);
+    case ET_var: {
+        auto it = vars.find(e->members.uid);
+        pexit(it != vars.end(), "Could not find variable id: {}\n", e->members.uid);
+        return it->second;
+    }
     case ET_integer: /* Fallthrough */
     case ET_bool:    /* Fallthrough */
     case ET_str:
@@ -498,7 +516,7 @@ execute(const UniqStmt &stmt)
         }
         break;
     case ST_assign:
-        vars[stmt->members.id] = evaluate(stmt->members.val);
+        vars[stmt->members.uid] = evaluate(stmt->members.val);
         break;
     case ST_while:
         while (to_bool(evaluate(stmt->members.condition))) {

@@ -58,7 +58,6 @@ struct Expression {
 
             switch (e->type) {
             case ET_var:
-                std::destroy_at(&e->members.name);
                 break;
             case ET_integer:
                 break;
@@ -94,7 +93,7 @@ struct Expression {
             std::string str;
         };
         struct {
-            std::string name;
+            usize uid;
         };
         struct {
             i64 value;
@@ -143,7 +142,6 @@ struct Statement {
                 std::destroy_at(&s->members.body);
                 break;
             case ST_assign:
-                std::destroy_at(&s->members.id);
                 std::destroy_at(&s->members.val);
                 break;
             case ST_if_else:
@@ -169,7 +167,7 @@ struct Statement {
             std::vector<std::unique_ptr<Statement, Statement::Deleter>> body;
         };
         struct {
-            std::string id;
+            usize uid;
             SharedExpr val;
         };
         struct {
