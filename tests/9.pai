@@ -10,12 +10,21 @@
 nrows = read $ _;
 ncols = read $ _;
 mat = [];
+stack = [];
+l = 0;
 i = 0;
 while i < nrows {
     current_row = [];
     j = 0;
     while j < ncols {
-        current_row = current_row + [read $ _];
+        cell = read $ _;
+        current_row = current_row + [cell];
+
+        if cell == 2 {
+            stack = [[i, j]];
+            l = 1;
+        }
+
         j = j + 1;
     }
 
@@ -38,8 +47,6 @@ while i < nrows {
 }
 
 found = False;
-stack = [[0, 0]];
-l = 1;
 while l > 0 {
     # Pop stack
     new_stack = [];
