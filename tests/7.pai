@@ -1,0 +1,60 @@
+# Check if a bracket sequence is well formed
+# -1, 1, -2, 2, -3, 3 stand for '(, ')', '[', ']', '{', '}'
+
+seq = [-1, 1, -2, 2, -2, -1, 1, 2];
+n = len $ seq;
+
+stack = [];
+l = 0;
+
+ok = True;
+i = 0;
+while i < n {
+    if seq[i] == -1 {
+        stack = stack + [-1];
+        l = l + 1;
+    }
+    if seq[i] == -2 {
+        stack = stack + [-2];
+        l = l + 1;
+    }
+    if seq[i] == -3 {
+        stack = stack + [-3];
+        l = l + 1;
+    }
+
+    if seq[i] > 0 {
+        if l == 0 || !(stack[l - 1] == -seq[i]) {
+            ok = False;
+            break;
+        }
+
+        new_stack = [];
+        j = 0;
+        while j < l - 1 {
+            if stack[j] == -1 {
+                new_stack = new_stack + [-1];
+            }
+            if stack[j] == -2 {
+                new_stack = new_stack + [-2];
+            }
+            if stack[j] == -3 {
+                new_stack = new_stack + [-3];
+            }
+
+            j = j + 1;
+        }
+
+        stack = new_stack;
+        l = l - 1;
+    }
+
+    i = i + 1;
+}
+
+if ok && len $ stack == 0 {
+    "Well-formed";
+}
+else {
+    "Ill-formed";
+}
