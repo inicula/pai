@@ -35,7 +35,6 @@ while i < n {
 
 if ok && len $ stack == 0 {
     "Well-formed";
-}
-else {
+} else {
     "Ill-formed";
 }
